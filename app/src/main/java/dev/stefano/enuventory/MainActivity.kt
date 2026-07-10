@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.stefano.enuventory.ui.components.EnuBottomBar
+import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +29,35 @@ class MainActivity : ComponentActivity() {
 
             EnuTheme {
                 Scaffold(
+                    topBar = {
+                        when (currentRoute) {
+                            "home" -> {
+                                EnuTopBar(
+                                    title = "Home",
+                                    showNotification = true,
+                                    onNotificationClick = { }
+                                )
+                            }
+
+                            "history" -> {
+                                EnuTopBar(
+                                    title = "History"
+                                )
+                            }
+
+                            "approval" -> {
+                                EnuTopBar(
+                                    title = "Approval"
+                                )
+                            }
+
+                            "settings" -> {
+                                EnuTopBar(
+                                    title = "Settings"
+                                )
+                            }
+                        }
+                    },
                     bottomBar = {
                         EnuBottomBar(
                             isAdmin = isAdminState,
