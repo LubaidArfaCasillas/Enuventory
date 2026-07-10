@@ -1,34 +1,41 @@
 package dev.stefano.enuventory.ui.theme
 
-import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import dev.stefano.enuventory.R
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+@OptIn(ExperimentalTextApi::class)
+val GeistVariableFontFamily = FontFamily(
+    Font(
+        resId = R.font.geist_variable,
+        variationSettings = FontVariation.Settings(FontVariation.Setting("wght", 400f))
     )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+)
+val EnuFontWeightSemiBold = FontWeight(600)
+val EnuFontSizeSm = 12.8.sp
+val EnuLineHeightSm = 20.sp
+
+class EnuTypography(val ui: UiStyles)
+class UiStyles(val labels: LabelStyles)
+class LabelStyles(val normalCase: NormalCaseStyles)
+class NormalCaseStyles(val base: TextStyle)
+
+val EnuTypographyStyle = EnuTypography(
+    ui = UiStyles(
+        labels = LabelStyles(
+            normalCase = NormalCaseStyles(
+                base = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = EnuFontSizeSm,
+                    lineHeight = EnuLineHeightSm,
+                    fontWeight = EnuFontWeightSemiBold
+                )
+            )
+        )
     )
-    */
 )
