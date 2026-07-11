@@ -30,7 +30,8 @@ class UiStyles(val labels: LabelStyles)
 class LabelStyles(val normalCase: NormalCaseStyles)
 class NormalCaseStyles(
     val base: TextStyle,
-    val large: TextStyle
+    val large: TextStyle,
+    val small: TextStyle
 )
 class ContentStyles(val headings: HeadingStyles)
 class HeadingStyles(val h3: TextStyle)
@@ -50,6 +51,12 @@ val EnuTypographyStyle = EnuTypography(
                     fontSize = EnuFontSizeLarge,
                     lineHeight = EnuLineHeightLarge,
                     fontWeight = EnuFontWeightSemiBold
+                ),
+                small = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = 10.24.sp,
+                    lineHeight = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             )
         )

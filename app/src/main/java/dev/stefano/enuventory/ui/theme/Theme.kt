@@ -20,7 +20,11 @@ class EnuColors(
     val contentSignalSuccessDefault: Color,
     val backgroundSignalSuccessMediumDefault: Color,
     val contentBrandPrimaryOnStrong: Color,
-    val contentDefaultDisabled: Color
+    val contentDefaultDisabled: Color,
+    val contentSignalSuccessOnSubtle: Color,
+    val contentSignalErrorOnSubtle: Color,
+    val contentSignalWarningOnSubtle: Color,
+    val backgroundSignalWarningMediumDefault: Color
 )
 
 val EnuLightColors = EnuColors(
@@ -38,7 +42,12 @@ val EnuLightColors = EnuColors(
     backgroundSignalErrorMediumDefault = BaseSignalError200,
     contentSignalSuccessDefault = BaseSignalSuccess600,
     backgroundSignalSuccessMediumDefault = BaseSignalSuccess200,
-    contentDefaultDisabled = BaseNeutralGrey400
+    contentDefaultDisabled = BaseNeutralGrey400,
+
+    contentSignalSuccessOnSubtle = BaseSignalSuccess800,
+    contentSignalErrorOnSubtle = BaseSignalError800,
+    contentSignalWarningOnSubtle = BaseSignalWarning800,
+    backgroundSignalWarningMediumDefault = BaseSignalWarning200
 )
 
 val EnuDarkColors = EnuColors(
@@ -56,7 +65,12 @@ val EnuDarkColors = EnuColors(
     backgroundSignalErrorMediumDefault = BaseSignalError700,
     contentSignalSuccessDefault = BaseSignalSuccess600,
     backgroundSignalSuccessMediumDefault = BaseSignalSuccess700,
-    contentDefaultDisabled = BaseNeutralGrey600
+    contentDefaultDisabled = BaseNeutralGrey600,
+
+    contentSignalSuccessOnSubtle = BaseSignalSuccess400,
+    contentSignalErrorOnSubtle = BaseSignalError400,
+    contentSignalWarningOnSubtle = BaseSignalWarning400,
+    backgroundSignalWarningMediumDefault = BaseSignalWarning700
 )
 
 // provide color globally in the compose tree
