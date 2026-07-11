@@ -16,23 +16,45 @@ val GeistVariableFontFamily = FontFamily(
         variationSettings = FontVariation.Settings(FontVariation.Setting("wght", 400f))
     )
 )
+
+val EnuFontWeightRegular = FontWeight(400)
 val EnuFontWeightSemiBold = FontWeight(600)
+val EnuFontWeightBold = FontWeight(700)
+
+val EnuFontSizeXs = 10.24.sp
 val EnuFontSizeSm = 12.8.sp
+val EnuFontSizeBase = 16.sp
+val EnuFontSizeXl = 25.sp
+
+val EnuLineHeightXs = 16.sp
 val EnuLineHeightSm = 20.sp
-val EnuFontSizeLarge = 16.sp
-val EnuLineHeightLarge = 24.sp
+val EnuLineHeightBase = 24.sp
+val EnuLineHeightXl = 40.sp
 
 class EnuTypography(
     val ui: UiStyles,
     val content: ContentStyles
 )
+
 class UiStyles(val labels: LabelStyles)
-class LabelStyles(val normalCase: NormalCaseStyles)
+
+class LabelStyles(
+    val normalCase: NormalCaseStyles,
+    val allCaps: AllCapsStyles
+)
+
 class NormalCaseStyles(
     val base: TextStyle,
     val large: TextStyle,
     val small: TextStyle
 )
+
+class AllCapsStyles(
+    val large: TextStyle,
+    val base: TextStyle,
+    val small: TextStyle
+)
+
 class ContentStyles(val headings: HeadingStyles)
 class HeadingStyles(val h3: TextStyle)
 
@@ -40,6 +62,12 @@ val EnuTypographyStyle = EnuTypography(
     ui = UiStyles(
         labels = LabelStyles(
             normalCase = NormalCaseStyles(
+                small = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = EnuFontSizeXs,
+                    lineHeight = EnuLineHeightXs,
+                    fontWeight = EnuFontWeightSemiBold
+                ),
                 base = TextStyle(
                     fontFamily = GeistVariableFontFamily,
                     fontSize = EnuFontSizeSm,
@@ -48,15 +76,29 @@ val EnuTypographyStyle = EnuTypography(
                 ),
                 large = TextStyle(
                     fontFamily = GeistVariableFontFamily,
-                    fontSize = EnuFontSizeLarge,
-                    lineHeight = EnuLineHeightLarge,
+                    fontSize = EnuFontSizeBase,
+                    lineHeight = EnuLineHeightBase,
                     fontWeight = EnuFontWeightSemiBold
-                ),
+                )
+            ),
+            allCaps = AllCapsStyles(
                 small = TextStyle(
                     fontFamily = GeistVariableFontFamily,
-                    fontSize = 10.24.sp,
-                    lineHeight = 16.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = EnuFontSizeXs,
+                    lineHeight = EnuLineHeightXs,
+                    fontWeight = EnuFontWeightSemiBold
+                ),
+                base = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = EnuFontSizeSm,
+                    lineHeight = EnuLineHeightSm,
+                    fontWeight = EnuFontWeightSemiBold
+                ),
+                large = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = EnuFontSizeBase,
+                    lineHeight = EnuLineHeightBase,
+                    fontWeight = EnuFontWeightSemiBold
                 )
             )
         )
@@ -65,9 +107,9 @@ val EnuTypographyStyle = EnuTypography(
         headings = HeadingStyles(
             h3 = TextStyle(
                 fontFamily = GeistVariableFontFamily,
-                fontSize = 20.sp,
-                lineHeight = 28.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = EnuFontSizeXl,
+                lineHeight = EnuLineHeightXl,
+                fontWeight = EnuFontWeightSemiBold
             )
         )
     )
