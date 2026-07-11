@@ -31,7 +31,8 @@ class EnuColors(
     val surfaceDefaultBase: Color,
     val surfaceDefaultLevel3: Color,
 
-    val backgroundNeutralMediumDefault: Color
+    val backgroundNeutralMediumDefault: Color,
+    val contentSignalWarningDefault: Color,
 )
 
 val EnuLightColors = EnuColors(
@@ -58,7 +59,8 @@ val EnuLightColors = EnuColors(
     surfaceDefaultLevel3 = BaseNeutralGrey100,
 
     surfaceBrandPrimaryStrong = BaseBrandPrimary500,
-    backgroundNeutralMediumDefault = BaseNeutralBlack10
+    backgroundNeutralMediumDefault = BaseNeutralBlack10,
+    contentSignalWarningDefault = BaseSignalWarning600,
 )
 
 val EnuDarkColors = EnuColors(
@@ -85,7 +87,8 @@ val EnuDarkColors = EnuColors(
     surfaceDefaultLevel3 = BaseNeutralGrey700,
 
     surfaceBrandPrimaryStrong = BaseBrandPrimary500,
-    backgroundNeutralMediumDefault = BaseNeutralWhite10
+    backgroundNeutralMediumDefault = BaseNeutralWhite10,
+    contentSignalWarningDefault = BaseSignalWarning600,
 )
 
 // provide color globally in the compose tree

@@ -52,6 +52,7 @@ fun HistoryPage(
     val tabTitles = listOf("Aktif", "Selesai")
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
+    // Memfilter data menggunakan parameter boolean isFinished dari model data barumu
     val filteredItems = remember(selectedTabIndex) {
         dummyHistoryItems.filter { it.isFinished == (selectedTabIndex == 1) }
     }
@@ -98,14 +99,21 @@ fun HistoryPage(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(dummyHistoryItems) { item ->
+                            // 🌟 PERBAIKAN: Memakai filteredItems hasil saringan tab aktif/selesai
+                            items(filteredItems) { item ->
                                 EnuHistoryCard(
                                     title = item.title,
                                     id = item.id,
                                     stock = item.stock,
                                     status = item.status,
                                     borrowDate = item.borrowDate,
-                                    returnEstimate = item.returnEstimate,
+                                    // 🌟 PERBAIKAN: Jika selesai, oper returnDate (atau fallback "-"). Jika belum, pakai returnEstimate.
+                                    returnEstimate = if (item.isFinished) {
+                                        item.returnDate ?: "-"
+                                    } else {
+                                        item.returnEstimate
+                                    },
+                                    isFinished = item.isFinished,
                                     onDetailClick = { onDetailClick(item.id) }
                                 )
                             }
@@ -198,6 +206,7 @@ private fun HistoryErrorState(onRetryClick: () -> Unit) {
         )
     }
 }
+
 
 @Preview(name = "Light Normal")
 @Composable

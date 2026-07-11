@@ -9,6 +9,7 @@ data class HistoryItem(
     val status: EnuBorrowStatus,
     val borrowDate: String,
     val returnEstimate: String,
+    val returnDate: String? = null,
     val isFinished: Boolean
 )
 
@@ -49,6 +50,7 @@ val dummyHistoryItems = listOf(
         5,
         EnuBorrowStatus.Selesai,
         "16 Okt 26",
+        "",
         "21 Okt 26",
         isFinished = true
     )

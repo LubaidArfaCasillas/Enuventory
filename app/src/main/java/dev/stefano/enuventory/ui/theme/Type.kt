@@ -56,8 +56,19 @@ class AllCapsStyles(
     val small: TextStyle
 )
 
-class ContentStyles(val headings: HeadingStyles)
-class HeadingStyles(val h3: TextStyle)
+class ContentStyles(
+    val headings: HeadingStyles,
+    val body: BodyStyles
+)
+
+class HeadingStyles(
+    val h3: TextStyle,
+    val h6: TextStyle
+)
+
+class BodyStyles(
+    val medium: TextStyle
+)
 
 val EnuTypographyStyle = EnuTypography(
     ui = UiStyles(
@@ -111,6 +122,20 @@ val EnuTypographyStyle = EnuTypography(
                 fontSize = EnuFontSizeXl,
                 lineHeight = EnuLineHeightXl,
                 fontWeight = EnuFontWeightSemiBold
+            ),
+            h6 = TextStyle(
+                fontFamily = GeistVariableFontFamily,
+                fontSize = EnuFontSizeSm,
+                lineHeight = EnuLineHeightSm,
+                fontWeight = EnuFontWeightSemiBold
+            )
+        ),
+        body = BodyStyles(
+            medium = TextStyle(
+                fontFamily = GeistVariableFontFamily,
+                fontSize = EnuFontSizeSm,
+                lineHeight = EnuLineHeightBase,
+                fontWeight = EnuFontWeightRegular
             )
         )
     )
