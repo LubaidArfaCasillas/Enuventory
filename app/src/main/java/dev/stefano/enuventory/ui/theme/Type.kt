@@ -1,3 +1,4 @@
+@file:Suppress("unused")
 package dev.stefano.enuventory.ui.theme
 
 import androidx.compose.ui.text.ExperimentalTextApi
