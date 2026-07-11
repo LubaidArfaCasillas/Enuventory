@@ -19,6 +19,8 @@ val GeistVariableFontFamily = FontFamily(
 val EnuFontWeightSemiBold = FontWeight(600)
 val EnuFontSizeSm = 12.8.sp
 val EnuLineHeightSm = 20.sp
+val EnuFontSizeLarge = 16.sp
+val EnuLineHeightLarge = 24.sp
 
 class EnuTypography(
     val ui: UiStyles,
@@ -26,7 +28,10 @@ class EnuTypography(
 )
 class UiStyles(val labels: LabelStyles)
 class LabelStyles(val normalCase: NormalCaseStyles)
-class NormalCaseStyles(val base: TextStyle)
+class NormalCaseStyles(
+    val base: TextStyle,
+    val large: TextStyle
+)
 class ContentStyles(val headings: HeadingStyles)
 class HeadingStyles(val h3: TextStyle)
 
@@ -38,6 +43,12 @@ val EnuTypographyStyle = EnuTypography(
                     fontFamily = GeistVariableFontFamily,
                     fontSize = EnuFontSizeSm,
                     lineHeight = EnuLineHeightSm,
+                    fontWeight = EnuFontWeightSemiBold
+                ),
+                large = TextStyle(
+                    fontFamily = GeistVariableFontFamily,
+                    fontSize = EnuFontSizeLarge,
+                    lineHeight = EnuLineHeightLarge,
                     fontWeight = EnuFontWeightSemiBold
                 )
             )

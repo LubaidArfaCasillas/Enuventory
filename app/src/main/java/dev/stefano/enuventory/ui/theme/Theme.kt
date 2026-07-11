@@ -9,19 +9,54 @@ import androidx.compose.ui.graphics.Color
 class EnuColors(
     val contentBrandPrimaryDefault: Color,
     val surfaceDefaultLevel3: Color,
-    val contentDefaultPrimary: Color
+    val contentDefaultPrimary: Color,
+    val contentDefaultInversePrimary: Color,
+    val backgroundBrandPrimaryStrongDefault: Color,
+    val backgroundDisabled: Color,
+    val backgroundPrimaryStrongPressed: Color,
+    val backgroundSignalWarningStrongDefault: Color,
+    val contentSignalErrorDefault: Color,
+    val backgroundSignalErrorMediumDefault: Color,
+    val contentSignalSuccessDefault: Color,
+    val backgroundSignalSuccessMediumDefault: Color,
+    val contentBrandPrimaryOnStrong: Color,
+    val contentDefaultDisabled: Color
 )
 
 val EnuLightColors = EnuColors(
     contentBrandPrimaryDefault = BaseBrandPrimary600,
+    contentBrandPrimaryOnStrong = BaseNeutralWhite100,
+    contentDefaultPrimary = BaseNeutralBlack100,
+    contentDefaultInversePrimary = BaseNeutralWhite100,
     surfaceDefaultLevel3 = BaseNeutralGrey100,
-    contentDefaultPrimary = BaseNeutralBlack100
+
+    backgroundBrandPrimaryStrongDefault = BaseBrandPrimary500,
+    backgroundDisabled = BaseNeutralBlack10,
+    backgroundPrimaryStrongPressed = BaseBrandPrimary700,
+    backgroundSignalWarningStrongDefault = BaseSignalWarning500,
+    contentSignalErrorDefault = BaseSignalError600,
+    backgroundSignalErrorMediumDefault = BaseSignalError200,
+    contentSignalSuccessDefault = BaseSignalSuccess600,
+    backgroundSignalSuccessMediumDefault = BaseSignalSuccess200,
+    contentDefaultDisabled = BaseNeutralGrey400
 )
 
 val EnuDarkColors = EnuColors(
     contentBrandPrimaryDefault = BaseBrandPrimary600,
+    contentDefaultPrimary = BaseNeutralWhite100,
+    contentDefaultInversePrimary = BaseNeutralBlack100,
+    contentBrandPrimaryOnStrong = BaseNeutralWhite100,
     surfaceDefaultLevel3 = BaseNeutralGrey700,
-    contentDefaultPrimary = BaseNeutralWhite100
+
+    backgroundBrandPrimaryStrongDefault = BaseBrandPrimary500,
+    backgroundDisabled = BaseNeutralWhite10,
+    backgroundPrimaryStrongPressed = BaseBrandPrimary300,
+    backgroundSignalWarningStrongDefault = BaseSignalWarning500,
+    contentSignalErrorDefault = BaseSignalError600,
+    backgroundSignalErrorMediumDefault = BaseSignalError700,
+    contentSignalSuccessDefault = BaseSignalSuccess600,
+    backgroundSignalSuccessMediumDefault = BaseSignalSuccess700,
+    contentDefaultDisabled = BaseNeutralGrey600
 )
 
 // provide color globally in the compose tree
