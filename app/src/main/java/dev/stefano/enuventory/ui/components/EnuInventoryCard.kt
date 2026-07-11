@@ -49,7 +49,7 @@ fun EnuInventoryCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .shimmerLoading(isLoading)
                     .background(
