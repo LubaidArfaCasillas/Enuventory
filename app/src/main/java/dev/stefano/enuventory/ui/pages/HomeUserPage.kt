@@ -7,31 +7,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.stefano.enuventory.R
 import dev.stefano.enuventory.data.dummyAssets
-import dev.stefano.enuventory.ui.util.toUiStatus
+import dev.stefano.enuventory.domain.model.Asset
+import dev.stefano.enuventory.ui.common.EnuEmptyState
+import dev.stefano.enuventory.ui.common.EnuErrorState
+import dev.stefano.enuventory.ui.common.UiState
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
-import dev.stefano.enuventory.ui.components.EnuButton
 import dev.stefano.enuventory.ui.components.EnuCategoryBadge
 import dev.stefano.enuventory.ui.components.EnuCategoryBadgeState
 import dev.stefano.enuventory.ui.components.EnuInventoryCard
@@ -39,14 +34,11 @@ import dev.stefano.enuventory.ui.components.EnuInventoryStatus
 import dev.stefano.enuventory.ui.components.EnuSearchField
 import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
-
-enum class HomeUserState {
-    Normal, Loading, Error, Empty
-}
+import dev.stefano.enuventory.ui.util.toUiStatus
 
 @Composable
 fun HomeUserPage(
-    state: HomeUserState,
+    state: UiState<List<Asset>>,
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onRetryClick: () -> Unit,
@@ -81,7 +73,7 @@ fun HomeUserPage(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            if (state != HomeUserState.Error) {
+            if (state !is UiState.Error) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 EnuSearchField(
@@ -97,7 +89,7 @@ fun HomeUserPage(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(categories.size) { index ->
-                        val badgeState = if (state == HomeUserState.Loading) {
+                        val badgeState = if (state is UiState.Loading) {
                             EnuCategoryBadgeState.Loading
                         } else if (index == selectedCategoryIndex) {
                             EnuCategoryBadgeState.Selected
@@ -117,23 +109,34 @@ fun HomeUserPage(
             }
 
             when (state) {
-                HomeUserState.Normal -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(dummyAssets) { item ->
-                            EnuInventoryCard(
-                                title = item.title,
-                                id = item.id,
-                                stock = item.stock,
-                                status = item.status.toUiStatus()
-                            )
+                is UiState.Success -> {
+                    val filteredAssets = remember(state.data, selectedCategoryIndex, searchQuery) {
+                        state.data.filter { item ->
+                            val matchesCategory = selectedCategoryIndex == 0 || item.category.lowercase() == categories[selectedCategoryIndex].lowercase()
+                            val matchesSearch = searchQuery.isBlank() || item.title.lowercase().contains(searchQuery.lowercase()) || item.id.lowercase().contains(searchQuery.lowercase())
+                            matchesCategory && matchesSearch
+                        }
+                    }
+                    if (filteredAssets.isEmpty()) {
+                        EnuEmptyState("Aset tidak ditemukan")
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(filteredAssets) { item ->
+                                EnuInventoryCard(
+                                    title = item.title,
+                                    id = item.id,
+                                    stock = item.stock,
+                                    status = item.status.toUiStatus()
+                                )
+                            }
                         }
                     }
                 }
 
-                HomeUserState.Loading -> {
+                is UiState.Loading -> {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
@@ -148,60 +151,12 @@ fun HomeUserPage(
                     }
                 }
 
-                HomeUserState.Error -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_error),
-                            contentDescription = "Error",
-                            tint = EnuTheme.colors.contentSignalErrorDefault,
-                            modifier = Modifier.size(56.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Terjadi Kesalahan",
-                            style = EnuTheme.typography.ui.labels.normalCase.large,
-                            color = EnuTheme.colors.contentDefaultPrimary
-                        )
-                        Text(
-                            text = "error log",
-                            style = EnuTheme.typography.ui.labels.normalCase.small,
-                            color = EnuTheme.colors.contentSignalErrorDefault,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        EnuButton(
-                            text = "Coba lagi",
-                            onClick = onRetryClick,
-                            modifier = Modifier.fillMaxWidth(0.6f)
-                        )
-                    }
+                is UiState.Error -> {
+                    EnuErrorState(errorMessage = state.message, onRetryClick = onRetryClick)
                 }
 
-                HomeUserState.Empty -> {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_info),
-                            contentDescription = "Empty",
-                            tint = EnuTheme.colors.contentBrandPrimaryDefault,
-                            modifier = Modifier.size(56.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Belum ada asset yang ditambahkan",
-                            style = EnuTheme.typography.ui.labels.normalCase.base,
-                            color = EnuTheme.colors.contentDefaultPrimary,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                is UiState.Empty -> {
+                    EnuEmptyState(message = "Belum ada asset yang ditambahkan")
                 }
             }
         }
@@ -213,7 +168,7 @@ fun HomeUserPage(
 fun HomeUserPageNormalPreviewLight() {
     EnuTheme {
         HomeUserPage(
-            state = HomeUserState.Normal,
+            state = UiState.Success(dummyAssets),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {}
@@ -226,7 +181,7 @@ fun HomeUserPageNormalPreviewLight() {
 fun HomeUserPageLoadingPreviewLight() {
     EnuTheme {
         HomeUserPage(
-            state = HomeUserState.Loading,
+            state = UiState.Loading,
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {}
@@ -239,7 +194,7 @@ fun HomeUserPageLoadingPreviewLight() {
 fun HomeUserPageErrorPreviewLight() {
     EnuTheme {
         HomeUserPage(
-            state = HomeUserState.Error,
+            state = UiState.Error("Gagal memuat data"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {}
@@ -252,7 +207,7 @@ fun HomeUserPageErrorPreviewLight() {
 fun HomeUserPageEmptyPreviewLight() {
     EnuTheme {
         HomeUserPage(
-            state = HomeUserState.Empty,
+            state = UiState.Empty,
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {}
@@ -265,46 +220,7 @@ fun HomeUserPageEmptyPreviewLight() {
 fun HomeUserPageNormalPreviewDark() {
     EnuTheme(darkTheme = true) {
         HomeUserPage(
-            state = HomeUserState.Normal,
-            currentRoute = "home",
-            onBottomBarItemClick = {},
-            onRetryClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun HomeUserPageLoadingPreviewDark() {
-    EnuTheme(darkTheme = true) {
-        HomeUserPage(
-            state = HomeUserState.Loading,
-            currentRoute = "home",
-            onBottomBarItemClick = {},
-            onRetryClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun HomeUserPageErrorPreviewDark() {
-    EnuTheme(darkTheme = true) {
-        HomeUserPage(
-            state = HomeUserState.Error,
-            currentRoute = "home",
-            onBottomBarItemClick = {},
-            onRetryClick = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun HomeUserPageEmptyPreviewDark() {
-    EnuTheme(darkTheme = true) {
-        HomeUserPage(
-            state = HomeUserState.Empty,
+            state = UiState.Success(dummyAssets),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {}

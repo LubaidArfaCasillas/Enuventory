@@ -12,6 +12,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import dev.stefano.enuventory.domain.model.UserRole
 import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
+import dev.stefano.enuventory.ui.screen.home.HomeViewModel
+import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
+import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
 import dev.stefano.enuventory.ui.pages.ApprovalPage
 import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
@@ -72,9 +75,12 @@ fun EnuNavGraph(
         // ── Home (User / Admin) ─────────────────────────────────────────────
         composable<EnuRoute.Home> {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val homeViewModel: HomeViewModel = hiltViewModel()
+            val assetsState by homeViewModel.assetsState.collectAsStateWithLifecycle()
+
             if (isAdmin) {
                 HomeAdminPage(
-                    state = dev.stefano.enuventory.ui.pages.HomeAdminState.Normal,
+                    state = assetsState,
                     currentRoute = currentRoute,
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
@@ -90,7 +96,7 @@ fun EnuNavGraph(
                 )
             } else {
                 HomeUserPage(
-                    state = dev.stefano.enuventory.ui.pages.HomeUserState.Normal,
+                    state = assetsState,
                     currentRoute = currentRoute,
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
@@ -110,8 +116,11 @@ fun EnuNavGraph(
         // ── History (User) ──────────────────────────────────────────────────
         composable<EnuRoute.History> {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val historyViewModel: HistoryViewModel = hiltViewModel()
+            val historyState by historyViewModel.historyState.collectAsStateWithLifecycle()
+
             HistoryPage(
-                state = dev.stefano.enuventory.ui.pages.HistoryPageState.Normal,
+                state = historyState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val route = when (item.route) {
@@ -175,8 +184,11 @@ fun EnuNavGraph(
         // ── Approval (Admin) ────────────────────────────────────────────────
         composable<EnuRoute.Approval> {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val approvalViewModel: ApprovalViewModel = hiltViewModel()
+            val requestsState by approvalViewModel.requestsState.collectAsStateWithLifecycle()
+
             ApprovalPage(
-                state = dev.stefano.enuventory.ui.pages.ApprovalPageState.Normal,
+                state = requestsState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val route = when (item.route) {
