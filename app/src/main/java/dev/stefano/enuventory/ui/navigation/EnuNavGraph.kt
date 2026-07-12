@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import dev.stefano.enuventory.domain.model.UserRole
 import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
+import dev.stefano.enuventory.ui.screen.auth.LoginScreen
 import dev.stefano.enuventory.ui.screen.home.HomeViewModel
 import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
@@ -68,8 +69,14 @@ fun EnuNavGraph(
 
         // ── Auth ────────────────────────────────────────────────────────────
         composable<EnuRoute.Login> {
-            // TODO: Buat LoginScreen dan LoginViewModel
-            // Sementara langsung navigate ke Home untuk development
+            LoginScreen(
+                viewModel = authViewModel,
+                onLoginSuccess = {
+                    navController.navigate(EnuRoute.Home) {
+                        popUpTo(EnuRoute.Login) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // ── Home (User / Admin) ─────────────────────────────────────────────
