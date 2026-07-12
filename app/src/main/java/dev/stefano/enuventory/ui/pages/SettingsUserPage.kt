@@ -41,7 +41,7 @@ import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
 
 @Composable
-fun SettingsPage(
+fun SettingsUserPage(
     username: String,
     role: String,
     appVersion: String,
@@ -203,9 +203,9 @@ fun SettingsPage(
 
 @Preview
 @Composable
-fun SettingsPagePreviewLight() {
+fun SettingsUserPagePreviewLight() {
     EnuTheme(darkTheme = false) {
-        SettingsPage(
+        SettingsAdminPage(
             username = "Username",
             role = "User",
             appVersion = "v1.0.0",
@@ -218,9 +218,9 @@ fun SettingsPagePreviewLight() {
 
 @Preview
 @Composable
-fun SettingsPagePreviewDark() {
+fun SettingsUserPagePreviewDark() {
     EnuTheme(darkTheme = true) {
-        SettingsPage(
+        SettingsAdminPage(
             username = "Username",
             role = "User",
             appVersion = "v1.0.0",
