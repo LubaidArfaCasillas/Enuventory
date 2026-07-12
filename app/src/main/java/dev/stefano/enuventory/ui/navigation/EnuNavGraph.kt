@@ -19,6 +19,8 @@ import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
 import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
 import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
+import dev.stefano.enuventory.ui.screen.asset.DetailAssetUserViewModel
+import dev.stefano.enuventory.ui.screen.asset.DetailAssetAdminViewModel
 import dev.stefano.enuventory.ui.pages.ApprovalPage
 import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
@@ -262,14 +264,11 @@ fun EnuNavGraph(
         composable<EnuRoute.DetailAsset> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.DetailAsset>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
-            // TODO: Ganti dengan data nyata dari DetailAssetViewModel nanti
+            val detailAssetUserViewModel: DetailAssetUserViewModel = hiltViewModel()
+            val uiState by detailAssetUserViewModel.uiState.collectAsStateWithLifecycle()
+
             DetailAssetUserPage(
-                state = dev.stefano.enuventory.ui.pages.DetailAssetUserState.Normal,
-                title = "",
-                id = route.assetId,
-                stock = 0,
-                status = dev.stefano.enuventory.ui.components.EnuInventoryStatus.Tersedia,
-                description = "",
+                state = uiState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val navRoute = when (item.route) {
@@ -281,8 +280,13 @@ fun EnuNavGraph(
                     onBottomBarClick(navRoute)
                 },
                 onBackClick = { navController.popBackStack() },
-                onPinjamClick = {},
-                onBatalkanClick = {}
+                onPinjamClick = { returnEstimate ->
+                    detailAssetUserViewModel.requestBorrow(returnEstimate)
+                },
+                onBatalkanClick = { recordId ->
+                    detailAssetUserViewModel.cancelBorrow(recordId)
+                },
+                onRetryClick = {}
             )
         }
 
@@ -290,11 +294,11 @@ fun EnuNavGraph(
         composable<EnuRoute.DetailAssetAdmin> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.DetailAssetAdmin>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val detailAssetAdminViewModel: DetailAssetAdminViewModel = hiltViewModel()
+            val assetState by detailAssetAdminViewModel.assetState.collectAsStateWithLifecycle()
+
             DetailAssetAdminPage(
-                state = dev.stefano.enuventory.ui.pages.DetailAssetAdminState.Normal,
-                title = "", id = route.assetId, stock = 0,
-                status = dev.stefano.enuventory.ui.components.EnuInventoryStatus.Tersedia,
-                description = "",
+                state = assetState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val navRoute = when (item.route) {
@@ -307,7 +311,10 @@ fun EnuNavGraph(
                 },
                 onBackClick = { navController.popBackStack() },
                 onEditClick = {},
-                onHapusClick = {}
+                onHapusClick = {
+                    detailAssetAdminViewModel.deleteAsset(onSuccess = { navController.popBackStack() })
+                },
+                onRetryClick = {}
             )
         }
 
