@@ -25,8 +25,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.stefano.enuventory.R
-import dev.stefano.enuventory.data.dummyHistoryItems
+import dev.stefano.enuventory.data.dummyBorrowRecords
+import dev.stefano.enuventory.domain.model.BorrowStatus
 import dev.stefano.enuventory.ui.components.EnuBorrowStatus
+import dev.stefano.enuventory.ui.util.toUiStatus
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
 import dev.stefano.enuventory.ui.components.EnuButton
@@ -53,11 +55,11 @@ fun ApprovalPage(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     val filteredItems = remember(selectedTabIndex) {
-        dummyHistoryItems.filter { item ->
+        dummyBorrowRecords.filter { item ->
             if (selectedTabIndex == 0) {
-                item.status == EnuBorrowStatus.Menunggu
+                item.status == BorrowStatus.Pending
             } else {
-                item.status == EnuBorrowStatus.Selesai || item.status == EnuBorrowStatus.Ditolak
+                item.status == BorrowStatus.Completed || item.status == BorrowStatus.Rejected
             }
         }
     }
@@ -106,10 +108,10 @@ fun ApprovalPage(
                         ) {
                             items(filteredItems) { item ->
                                 EnuHistoryCard(
-                                    title = item.title,
-                                    id = item.id,
-                                    stock = item.stock,
-                                    status = item.status,
+                                    title = item.assetTitle,
+                                    id = item.assetId,
+                                    stock = item.assetStock,
+                                    status = item.status.toUiStatus(),
                                     borrowDate = item.borrowDate,
                                     returnEstimate = if (item.isFinished) {
                                         item.returnDate ?: "-"

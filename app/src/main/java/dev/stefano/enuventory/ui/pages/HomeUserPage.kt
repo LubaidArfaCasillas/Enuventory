@@ -27,7 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.stefano.enuventory.R
-import dev.stefano.enuventory.data.dummyInventoryItems
+import dev.stefano.enuventory.data.dummyAssets
+import dev.stefano.enuventory.ui.util.toUiStatus
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
 import dev.stefano.enuventory.ui.components.EnuButton
@@ -121,12 +122,12 @@ fun HomeUserPage(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(dummyInventoryItems) { item ->
+                        items(dummyAssets) { item ->
                             EnuInventoryCard(
                                 title = item.title,
                                 id = item.id,
                                 stock = item.stock,
-                                status = item.status
+                                status = item.status.toUiStatus()
                             )
                         }
                     }

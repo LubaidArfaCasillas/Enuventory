@@ -1,57 +1,57 @@
 package dev.stefano.enuventory.data
 
-import dev.stefano.enuventory.ui.components.EnuBorrowStatus
+import dev.stefano.enuventory.domain.model.BorrowRecord
+import dev.stefano.enuventory.domain.model.BorrowStatus
 
-data class HistoryItem(
-    val id: String,
-    val title: String,
-    val stock: Int,
-    val status: EnuBorrowStatus,
-    val borrowDate: String,
-    val returnEstimate: String,
-    val returnDate: String? = null,
-    val isFinished: Boolean
-)
-
-val dummyHistoryItems = listOf(
+// TODO: File ini bersifat sementara untuk dummy data selama belum ada repository.
+// Akan dihapus saat BorrowRepository sudah diimplementasikan.
+val dummyBorrowRecords = listOf(
     // Data untuk Tab Aktif
-    HistoryItem(
-        "HW-0019-A",
-        "Arduino Micro Controller",
-        5,
-        EnuBorrowStatus.Menunggu,
-        "16 Okt 26",
-        "16 Okt 26",
-        isFinished = false
+    BorrowRecord(
+        id = "REQ-001",
+        assetId = "HW-0019-A",
+        assetTitle = "Arduino Micro Controller",
+        assetStock = 5,
+        borrowerId = "USR-001",
+        borrowerName = "Budi Santoso",
+        status = BorrowStatus.Pending,
+        borrowDate = "16 Okt 26",
+        returnEstimate = "23 Okt 26"
     ),
-    HistoryItem(
-        "HW-0019-A",
-        "Arduino Micro Controller",
-        5,
-        EnuBorrowStatus.Dipinjam,
-        "16 Okt 26",
-        "16 Okt 26",
-        isFinished = false
+    BorrowRecord(
+        id = "REQ-002",
+        assetId = "HW-0019-A",
+        assetTitle = "Arduino Micro Controller",
+        assetStock = 5,
+        borrowerId = "USR-001",
+        borrowerName = "Budi Santoso",
+        status = BorrowStatus.Borrowed,
+        borrowDate = "16 Okt 26",
+        returnEstimate = "23 Okt 26"
     ),
 
     // Data untuk Tab Selesai
-    HistoryItem(
-        "HW-0019-A",
-        "Arduino Micro Controller",
-        5,
-        EnuBorrowStatus.Ditolak,
-        "16 Okt 26",
-        "-",
-        isFinished = true
+    BorrowRecord(
+        id = "REQ-003",
+        assetId = "HW-0019-A",
+        assetTitle = "Arduino Micro Controller",
+        assetStock = 5,
+        borrowerId = "USR-002",
+        borrowerName = "Ani Rahayu",
+        status = BorrowStatus.Rejected,
+        borrowDate = "16 Okt 26",
+        returnEstimate = "-"
     ),
-    HistoryItem(
-        "HW-0019-A",
-        "Arduino Micro Controller",
-        5,
-        EnuBorrowStatus.Selesai,
-        "16 Okt 26",
-        "",
-        "21 Okt 26",
-        isFinished = true
+    BorrowRecord(
+        id = "REQ-004",
+        assetId = "HW-0019-A",
+        assetTitle = "Arduino Micro Controller",
+        assetStock = 5,
+        borrowerId = "USR-002",
+        borrowerName = "Ani Rahayu",
+        status = BorrowStatus.Completed,
+        borrowDate = "16 Okt 26",
+        returnEstimate = "23 Okt 26",
+        returnDate = "21 Okt 26"
     )
 )

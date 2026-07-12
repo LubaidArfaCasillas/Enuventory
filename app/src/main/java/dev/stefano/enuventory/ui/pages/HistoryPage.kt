@@ -25,8 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.stefano.enuventory.R
-import dev.stefano.enuventory.data.dummyHistoryItems
+import dev.stefano.enuventory.data.dummyBorrowRecords
 import dev.stefano.enuventory.ui.components.EnuBorrowStatus
+import dev.stefano.enuventory.ui.util.toUiStatus
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
 import dev.stefano.enuventory.ui.components.EnuButton
@@ -54,7 +55,7 @@ fun HistoryPage(
 
     // Memfilter data menggunakan parameter boolean isFinished dari model data barumu
     val filteredItems = remember(selectedTabIndex) {
-        dummyHistoryItems.filter { it.isFinished == (selectedTabIndex == 1) }
+        dummyBorrowRecords.filter { it.isFinished == (selectedTabIndex == 1) }
     }
 
     Scaffold(
@@ -102,12 +103,11 @@ fun HistoryPage(
                             // 🌟 PERBAIKAN: Memakai filteredItems hasil saringan tab aktif/selesai
                             items(filteredItems) { item ->
                                 EnuHistoryCard(
-                                    title = item.title,
-                                    id = item.id,
-                                    stock = item.stock,
-                                    status = item.status,
+                                    title = item.assetTitle,
+                                    id = item.assetId,
+                                    stock = item.assetStock,
+                                    status = item.status.toUiStatus(),
                                     borrowDate = item.borrowDate,
-                                    // 🌟 PERBAIKAN: Jika selesai, oper returnDate (atau fallback "-"). Jika belum, pakai returnEstimate.
                                     returnEstimate = if (item.isFinished) {
                                         item.returnDate ?: "-"
                                     } else {
