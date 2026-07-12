@@ -74,12 +74,20 @@ class DetailAssetUserViewModel @Inject constructor(
         )
 
     fun requestBorrow(returnEstimate: String) {
+        android.util.Log.d("DetailAssetUser", "requestBorrow called with: $returnEstimate")
         viewModelScope.launch {
-            val user = getCurrentUserUseCase().filterNotNull().firstOrNull() ?: return@launch
+            android.util.Log.d("DetailAssetUser", "launching requestBorrow coroutine")
+            val user = getCurrentUserUseCase().filterNotNull().firstOrNull()
+            android.util.Log.d("DetailAssetUser", "retrieved user: $user")
+            if (user == null) {
+                android.util.Log.e("DetailAssetUser", "User is null!")
+                return@launch
+            }
             try {
                 requestBorrowUseCase(assetId, user.uid, returnEstimate)
+                android.util.Log.d("DetailAssetUser", "requestBorrowUseCase completed successfully")
             } catch (e: Exception) {
-                // handle error
+                android.util.Log.e("DetailAssetUser", "Gagal pinjam: ${e.message}", e)
             }
         }
     }

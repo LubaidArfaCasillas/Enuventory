@@ -49,6 +49,8 @@ import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
 import dev.stefano.enuventory.ui.util.toUiStatus
 
+import androidx.compose.runtime.LaunchedEffect
+
 enum class DetailAssetUserState {
     Normal, Error, MenungguPersetujuan, SedangDipinjam
 }
@@ -67,10 +69,14 @@ fun DetailAssetUserPage(
     var showBorrowDialog by remember { mutableStateOf(false) }
     var isDialogSubmitting by remember { mutableStateOf(false) }
 
-    // Reset status loading dialog jika state berubah
-    if (state !is UiState.Loading) {
-        isDialogSubmitting = false
-        showBorrowDialog = false
+    LaunchedEffect(state) {
+        if (state is UiState.Success) {
+            val relationshipState = state.data.relationshipState
+            if (relationshipState != DetailAssetUserState.Normal) {
+                showBorrowDialog = false
+                isDialogSubmitting = false
+            }
+        }
     }
 
     if (showBorrowDialog) {
