@@ -240,7 +240,7 @@ fun TambahAssetPage(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_info),
+                            painter = painterResource(id = R.drawable.ic_camera),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
                             tint = EnuTheme.colors.contentDefaultPrimary

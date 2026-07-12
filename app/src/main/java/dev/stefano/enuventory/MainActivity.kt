@@ -19,7 +19,7 @@ import dev.stefano.enuventory.ui.pages.HistoryPage
 import dev.stefano.enuventory.ui.pages.HistoryPageState
 import dev.stefano.enuventory.ui.pages.HomeUserPage
 import dev.stefano.enuventory.ui.pages.HomeUserState
-import dev.stefano.enuventory.ui.pages.SettingsPage
+import dev.stefano.enuventory.ui.pages.SettingsUserPage
 import dev.stefano.enuventory.ui.theme.EnuTheme
 
 class MainActivity : ComponentActivity() {
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(route = "settings") {
-                        SettingsPage(
+                        SettingsUserPage(
                             username = "Stefano",
                             role = "User",
                             appVersion = "v1.0.0",
