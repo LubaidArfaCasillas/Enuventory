@@ -16,7 +16,15 @@ import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
 import dev.stefano.enuventory.ui.screen.auth.LoginScreen
 import dev.stefano.enuventory.ui.screen.home.HomeViewModel
 import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
+import dev.stefano.enuventory.ui.screen.history.DetailRiwayatViewModel
+import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
+import dev.stefano.enuventory.ui.common.UiState
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
+import dev.stefano.enuventory.ui.screen.approval.DetailRequestViewModel
 import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
 import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
 import dev.stefano.enuventory.ui.screen.asset.DetailAssetUserViewModel
@@ -35,6 +43,7 @@ import dev.stefano.enuventory.ui.pages.SettingsAdminPage
 import dev.stefano.enuventory.ui.pages.SettingsUserPage
 import dev.stefano.enuventory.ui.pages.TambahAssetPage
 import dev.stefano.enuventory.ui.pages.UploadBuktiFotoPage
+import dev.stefano.enuventory.ui.theme.EnuTheme
 
 /**
  * NavGraph utama aplikasi.
@@ -322,10 +331,11 @@ fun EnuNavGraph(
         composable<EnuRoute.DetailRiwayat> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.DetailRiwayat>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val detailRiwayatViewModel: DetailRiwayatViewModel = hiltViewModel()
+            val uiState by detailRiwayatViewModel.uiState.collectAsStateWithLifecycle()
+
             DetailRiwayatPage(
-                state = dev.stefano.enuventory.ui.pages.DetailRiwayatState.MenungguPersetujuan,
-                assetTitle = "",
-                assetId = route.recordId,
+                state = uiState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val navRoute = when (item.route) {
@@ -340,7 +350,8 @@ fun EnuNavGraph(
                 onScanQrClick = { navController.navigate(EnuRoute.ScanQR) },
                 onKembalikanClick = {
                     navController.navigate(EnuRoute.Pengembalian(route.recordId))
-                }
+                },
+                onRetryClick = { detailRiwayatViewModel.loadRecord() }
             )
         }
 
@@ -348,14 +359,11 @@ fun EnuNavGraph(
         composable<EnuRoute.DetailRequest> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.DetailRequest>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
-            // TODO: Ganti dengan data nyata dari DetailRequestViewModel nanti
+            val detailRequestViewModel: DetailRequestViewModel = hiltViewModel()
+            val uiState by detailRequestViewModel.uiState.collectAsStateWithLifecycle()
+
             DetailRequestPage(
-                state = dev.stefano.enuventory.ui.pages.DetailRequestState.Normal,
-                assetTitle = "",
-                assetId = "",
-                borrowDate = "",
-                returnEstimate = "",
-                message = "",
+                state = uiState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val navRoute = when (item.route) {
@@ -367,9 +375,13 @@ fun EnuNavGraph(
                     onBottomBarClick(navRoute)
                 },
                 onBackClick = { navController.popBackStack() },
-                onApproveClick = {},
-                onTolakClick = {},
-                onRetryClick = {}
+                onApproveClick = {
+                    detailRequestViewModel.approveRequest(onSuccess = { navController.popBackStack() })
+                },
+                onTolakClick = {
+                    detailRequestViewModel.rejectRequest(onSuccess = { navController.popBackStack() })
+                },
+                onRetryClick = { detailRequestViewModel.loadRecord() }
             )
         }
 
@@ -390,34 +402,89 @@ fun EnuNavGraph(
         composable<EnuRoute.UploadBuktiFoto> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.UploadBuktiFoto>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
-            UploadBuktiFotoPage(
-                state = dev.stefano.enuventory.ui.pages.UploadBuktiState.Capture,
-                assetTitle = "",
-                assetId = "",
-                timestamp = "",
-                currentRoute = currentRoute,
-                onBottomBarItemClick = {},
-                onBackClick = { navController.popBackStack() },
-                onCaptureClick = {},
-                onUlangiClick = {},
-                onSubmitClick = {}
-            )
+            val returnAssetViewModel: ReturnAssetViewModel = hiltViewModel()
+            val recordState by returnAssetViewModel.recordState.collectAsStateWithLifecycle()
+            val uploadState by returnAssetViewModel.uploadState.collectAsStateWithLifecycle()
+
+            when (val state = recordState) {
+                is UiState.Success -> {
+                    val record = state.data
+                    UploadBuktiFotoPage(
+                        state = uploadState,
+                        assetTitle = record.assetTitle,
+                        assetId = record.assetId,
+                        timestamp = record.borrowDate,
+                        currentRoute = currentRoute,
+                        onBottomBarItemClick = { item ->
+                            val navRoute = when (item.route) {
+                                "home" -> EnuRoute.Home
+                                "history" -> EnuRoute.History
+                                "settings" -> EnuRoute.Settings
+                                else -> EnuRoute.Home
+                            }
+                            onBottomBarClick(navRoute)
+                        },
+                        onBackClick = { navController.popBackStack() },
+                        onCaptureClick = { returnAssetViewModel.onCapturePhoto() },
+                        onUlangiClick = { returnAssetViewModel.onUlangiCapture() },
+                        onSubmitClick = {
+                            returnAssetViewModel.submitReturn(onSuccess = {
+                                navController.navigate(EnuRoute.History) {
+                                    popUpTo(EnuRoute.History) { inclusive = true }
+                                }
+                            })
+                        }
+                    )
+                }
+                is UiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = EnuTheme.colors.contentBrandPrimaryDefault)
+                    }
+                }
+                else -> {
+                    // Fallback
+                }
+            }
         }
 
         // ── Pengembalian ─────────────────────────────────────────────────────
         composable<EnuRoute.Pengembalian> { backStackEntry ->
             val route = backStackEntry.toRoute<EnuRoute.Pengembalian>()
             val currentRoute = navController.currentBackStackEntry?.destination?.route
-            PengembalianPage(
-                assetTitle = "",
-                assetId = route.recordId,
-                currentRoute = currentRoute,
-                onBottomBarItemClick = {},
-                onBackClick = { navController.popBackStack() },
-                onUploadBuktiClick = {
-                    navController.navigate(EnuRoute.UploadBuktiFoto(route.recordId))
+            val returnAssetViewModel: ReturnAssetViewModel = hiltViewModel()
+            val recordState by returnAssetViewModel.recordState.collectAsStateWithLifecycle()
+
+            when (val state = recordState) {
+                is UiState.Success -> {
+                    val record = state.data
+                    PengembalianPage(
+                        assetTitle = record.assetTitle,
+                        assetId = record.assetId,
+                        currentRoute = currentRoute,
+                        onBottomBarItemClick = { item ->
+                            val navRoute = when (item.route) {
+                                "home" -> EnuRoute.Home
+                                "history" -> EnuRoute.History
+                                "settings" -> EnuRoute.Settings
+                                else -> EnuRoute.Home
+                            }
+                            onBottomBarClick(navRoute)
+                        },
+                        onBackClick = { navController.popBackStack() },
+                        onUploadBuktiClick = {
+                            navController.navigate(EnuRoute.UploadBuktiFoto(route.recordId))
+                        }
+                    )
                 }
-            )
+                is UiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = EnuTheme.colors.contentBrandPrimaryDefault)
+                    }
+                }
+                else -> {
+                    // Fallback
+                }
+            }
         }
     }
 }
