@@ -20,13 +20,14 @@ class BorrowRepositoryImpl @Inject constructor(
     override fun getBorrowRecordsByUser(userId: String): Flow<List<BorrowRecord>> = callbackFlow {
         val listener = borrowsCollection
             .whereEqualTo("borrowerId", userId)
-            .orderBy("borrowDate", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) {
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
-                trySend(snapshot.documents.mapNotNull { it.toBorrowRecord() })
+                val records = snapshot.documents.mapNotNull { it.toBorrowRecord() }
+                val sortedRecords = records.sortedByDescending { it.borrowDate }
+                trySend(sortedRecords)
             }
         awaitClose { listener.remove() }
     }
@@ -34,13 +35,14 @@ class BorrowRepositoryImpl @Inject constructor(
     override fun getPendingRequests(): Flow<List<BorrowRecord>> = callbackFlow {
         val listener = borrowsCollection
             .whereEqualTo("status", BorrowStatus.Pending.name)
-            .orderBy("borrowDate", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) {
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
-                trySend(snapshot.documents.mapNotNull { it.toBorrowRecord() })
+                val records = snapshot.documents.mapNotNull { it.toBorrowRecord() }
+                val sortedRecords = records.sortedByDescending { it.borrowDate }
+                trySend(sortedRecords)
             }
         awaitClose { listener.remove() }
     }
