@@ -33,7 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.stefano.enuventory.R
-import dev.stefano.enuventory.ui.components.AppThemeMode
+import dev.stefano.enuventory.domain.model.AppThemeMode
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
 import dev.stefano.enuventory.ui.components.EnuThemeSelector
@@ -46,12 +46,13 @@ fun SettingsUserPage(
     role: String,
     appVersion: String,
     currentRoute: String?,
+    selectedTheme: AppThemeMode,
+    onThemeSelected: (AppThemeMode) -> Unit,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onSignOutClick: () -> Unit,
     modifier: Modifier = Modifier,
     isAdmin: Boolean = false
 ) {
-    var selectedTheme by remember { mutableStateOf(AppThemeMode.Light) }
 
     Scaffold(
         modifier = modifier,
@@ -136,7 +137,7 @@ fun SettingsUserPage(
 
                 EnuThemeSelector(
                     selectedMode = selectedTheme,
-                    onModeSelected = { selectedTheme = it }
+                    onModeSelected = onThemeSelected
                 )
             }
 
@@ -210,6 +211,8 @@ fun SettingsUserPagePreviewLight() {
             role = "User",
             appVersion = "v1.0.0",
             currentRoute = "settings",
+            selectedTheme = AppThemeMode.Light,
+            onThemeSelected = {},
             onBottomBarItemClick = {},
             onSignOutClick = {}
         )
@@ -225,6 +228,8 @@ fun SettingsUserPagePreviewDark() {
             role = "User",
             appVersion = "v1.0.0",
             currentRoute = "settings",
+            selectedTheme = AppThemeMode.Dark,
+            onThemeSelected = {},
             onBottomBarItemClick = {},
             onSignOutClick = {}
         )

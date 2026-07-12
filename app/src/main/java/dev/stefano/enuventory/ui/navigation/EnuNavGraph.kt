@@ -11,11 +11,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import dev.stefano.enuventory.domain.model.UserRole
+import dev.stefano.enuventory.domain.model.AppThemeMode
 import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
 import dev.stefano.enuventory.ui.screen.auth.LoginScreen
 import dev.stefano.enuventory.ui.screen.home.HomeViewModel
 import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
+import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
+import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
 import dev.stefano.enuventory.ui.pages.ApprovalPage
 import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
@@ -149,12 +152,17 @@ fun EnuNavGraph(
         // ── Settings (User / Admin) ─────────────────────────────────────────
         composable<EnuRoute.Settings> {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
+
             if (isAdmin) {
                 SettingsAdminPage(
                     username = currentUser?.name ?: "",
                     role = "Admin",
                     appVersion = "v1.0.0",
                     currentRoute = currentRoute,
+                    selectedTheme = themeMode,
+                    onThemeSelected = { settingsViewModel.setThemeMode(it) },
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
                             "home" -> EnuRoute.Home
@@ -164,7 +172,7 @@ fun EnuNavGraph(
                         }
                         onBottomBarClick(route)
                     },
-                    onSignOutClick = { authViewModel.signOut() },
+                    onSignOutClick = { settingsViewModel.signOut() },
                     isAdmin = true
                 )
             } else {
@@ -173,6 +181,8 @@ fun EnuNavGraph(
                     role = "User",
                     appVersion = "v1.0.0",
                     currentRoute = currentRoute,
+                    selectedTheme = themeMode,
+                    onThemeSelected = { settingsViewModel.setThemeMode(it) },
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
                             "home" -> EnuRoute.Home
@@ -182,7 +192,7 @@ fun EnuNavGraph(
                         }
                         onBottomBarClick(route)
                     },
-                    onSignOutClick = { authViewModel.signOut() },
+                    onSignOutClick = { settingsViewModel.signOut() },
                     isAdmin = false
                 )
             }
@@ -217,8 +227,11 @@ fun EnuNavGraph(
         // ── Tambah Asset (Admin) ────────────────────────────────────────────
         composable<EnuRoute.TambahAsset> {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val tambahAssetViewModel: TambahAssetViewModel = hiltViewModel()
+            val addState by tambahAssetViewModel.addState.collectAsStateWithLifecycle()
+
             TambahAssetPage(
-                state = dev.stefano.enuventory.ui.pages.TambahAssetState.Normal,
+                state = addState,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val route = when (item.route) {
@@ -231,8 +244,17 @@ fun EnuNavGraph(
                 },
                 onBackClick = { navController.popBackStack() },
                 onAddPhotoClick = {},
-                onTambahAssetClick = { _, _, _, _, _ -> },
-                onRetryClick = {}
+                onTambahAssetClick = { title, stock, status, category, description ->
+                    tambahAssetViewModel.addAsset(
+                        title = title,
+                        stockStr = stock,
+                        statusStr = status,
+                        category = category,
+                        description = description,
+                        onSuccess = { navController.popBackStack() }
+                    )
+                },
+                onRetryClick = { tambahAssetViewModel.resetState() }
             )
         }
 

@@ -21,10 +21,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import dev.stefano.enuventory.domain.model.AppThemeMode
 import dev.stefano.enuventory.R
 import dev.stefano.enuventory.ui.theme.EnuTheme
-
-enum class AppThemeMode { Light, Dark, System }
 
 @Composable
 fun EnuThemeSelector(

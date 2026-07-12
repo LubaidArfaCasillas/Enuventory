@@ -42,4 +42,10 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         impl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindThemeRepository(
+        impl: dev.stefano.enuventory.data.repository.ThemeRepositoryImpl
+    ): dev.stefano.enuventory.domain.repository.ThemeRepository
 }

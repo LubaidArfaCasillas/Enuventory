@@ -48,15 +48,13 @@ import dev.stefano.enuventory.ui.components.EnuButtonVariant
 import dev.stefano.enuventory.ui.components.EnuTextField
 import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
-
-enum class TambahAssetState {
-    Normal, Loading, Error
-}
+import dev.stefano.enuventory.ui.common.UiState
+import dev.stefano.enuventory.ui.common.EnuErrorState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TambahAssetPage(
-    state: TambahAssetState,
+    state: UiState<Unit>,
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onBackClick: () -> Unit,
@@ -171,40 +169,12 @@ fun TambahAssetPage(
         },
         containerColor = EnuTheme.colors.surfaceDefaultBase
     ) { innerPadding ->
-        if (state == TambahAssetState.Error) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_error),
-                    contentDescription = null,
-                    tint = EnuTheme.colors.contentSignalErrorDefault,
-                    modifier = Modifier.size(56.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Terjadi Kesalahan",
-                    style = EnuTheme.typography.ui.labels.normalCase.large,
-                    color = EnuTheme.colors.contentDefaultPrimary
-                )
-                Text(
-                    text = "error log",
-                    style = EnuTheme.typography.ui.labels.normalCase.small,
-                    color = EnuTheme.colors.contentSignalErrorDefault,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                EnuButton(
-                    text = "Coba lagi",
-                    onClick = onRetryClick,
-                    modifier = Modifier.fillMaxWidth(0.6f)
-                )
-            }
+        if (state is UiState.Error) {
+            EnuErrorState(
+                errorMessage = state.message,
+                onRetryClick = onRetryClick,
+                modifier = Modifier.padding(innerPadding)
+            )
         } else {
             Column(
                 modifier = Modifier
@@ -341,7 +311,7 @@ fun TambahAssetPage(
                 )
 
                 val buttonVariant =
-                    if (state == TambahAssetState.Loading) EnuButtonVariant.Loading else EnuButtonVariant.Normal
+                    if (state is UiState.Loading) EnuButtonVariant.Loading else EnuButtonVariant.Normal
 
                 EnuButton(
                     text = "Tambah Asset",
@@ -369,7 +339,7 @@ fun TambahAssetPage(
 fun TambahAssetPagePreviewLight() {
     EnuTheme {
         TambahAssetPage(
-            state = TambahAssetState.Normal,
+            state = UiState.Success(Unit),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
@@ -385,7 +355,7 @@ fun TambahAssetPagePreviewLight() {
 fun TambahAssetPagePreviewDark() {
     EnuTheme(darkTheme = true) {
         TambahAssetPage(
-            state = TambahAssetState.Loading,
+            state = UiState.Loading,
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
