@@ -42,13 +42,13 @@ import dev.stefano.enuventory.ui.components.EnuInventoryStatusBadge
 import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
 
-enum class DetailAssetState {
+enum class DetailAssetUserState {
     Normal, Error, MenungguPersetujuan, SedangDipinjam
 }
 
 @Composable
-fun DetailAssetPage(
-    state: DetailAssetState,
+fun DetailAssetUserPage(
+    state: DetailAssetUserState,
     title: String,
     id: String,
     stock: Int,
@@ -178,7 +178,7 @@ fun DetailAssetPage(
                 }
 
                 when (state) {
-                    DetailAssetState.Normal -> {
+                    DetailAssetUserState.Normal -> {
                         EnuButton(
                             text = "Pinjam Asset",
                             onClick = { showBorrowDialog = true },
@@ -186,7 +186,7 @@ fun DetailAssetPage(
                         )
                     }
 
-                    DetailAssetState.Error -> {
+                    DetailAssetUserState.Error -> {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -219,7 +219,7 @@ fun DetailAssetPage(
                         }
                     }
 
-                    DetailAssetState.MenungguPersetujuan -> {
+                    DetailAssetUserState.MenungguPersetujuan -> {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Box(
                                 modifier = Modifier
@@ -244,7 +244,7 @@ fun DetailAssetPage(
                         }
                     }
 
-                    DetailAssetState.SedangDipinjam -> {
+                    DetailAssetUserState.SedangDipinjam -> {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -270,8 +270,8 @@ fun DetailAssetPage(
 @Composable
 fun DetailAssetNormalPreview() {
     EnuTheme {
-        DetailAssetPage(
-            state = DetailAssetState.Normal,
+        DetailAssetUserPage(
+            state = DetailAssetUserState.Normal,
             title = "Title", id = "HW-0018-A", stock = 5,
             status = EnuInventoryStatus.Tersedia,
             description = "Lorem Ipsum Dolor Sit Amet",
@@ -285,8 +285,8 @@ fun DetailAssetNormalPreview() {
 @Composable
 fun DetailAssetErrorPreview() {
     EnuTheme {
-        DetailAssetPage(
-            state = DetailAssetState.Error,
+        DetailAssetUserPage(
+            state = DetailAssetUserState.Error,
             title = "Title", id = "HW-0018-A", stock = 5,
             status = EnuInventoryStatus.Tersedia,
             description = "Lorem Ipsum Dolor Sit Amet",
@@ -300,8 +300,8 @@ fun DetailAssetErrorPreview() {
 @Composable
 fun DetailAssetWaitingPreview() {
     EnuTheme {
-        DetailAssetPage(
-            state = DetailAssetState.MenungguPersetujuan,
+        DetailAssetUserPage(
+            state = DetailAssetUserState.MenungguPersetujuan,
             title = "Title", id = "HW-0018-A", stock = 5,
             status = EnuInventoryStatus.Tersedia,
             description = "Lorem Ipsum Dolor Sit Amet",
@@ -315,8 +315,8 @@ fun DetailAssetWaitingPreview() {
 @Composable
 fun DetailAssetBorrowedPreview() {
     EnuTheme {
-        DetailAssetPage(
-            state = DetailAssetState.SedangDipinjam,
+        DetailAssetUserPage(
+            state = DetailAssetUserState.SedangDipinjam,
             title = "Title", id = "HW-0018-A", stock = 5,
             status = EnuInventoryStatus.Tersedia,
             description = "Lorem Ipsum Dolor Sit Amet",
