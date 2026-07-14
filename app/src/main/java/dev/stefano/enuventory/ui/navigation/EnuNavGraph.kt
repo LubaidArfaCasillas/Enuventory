@@ -1,34 +1,31 @@
 package dev.stefano.enuventory.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import dev.stefano.enuventory.domain.model.UserRole
-import dev.stefano.enuventory.domain.model.AppThemeMode
-import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
-import dev.stefano.enuventory.ui.screen.auth.LoginScreen
-import dev.stefano.enuventory.ui.screen.home.HomeViewModel
-import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
-import dev.stefano.enuventory.ui.screen.history.DetailRiwayatViewModel
-import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
 import dev.stefano.enuventory.ui.common.UiState
-import androidx.compose.ui.Alignment
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
-import dev.stefano.enuventory.ui.screen.approval.DetailRequestViewModel
-import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
-import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
-import dev.stefano.enuventory.ui.screen.asset.DetailAssetUserViewModel
-import dev.stefano.enuventory.ui.screen.asset.DetailAssetAdminViewModel
 import dev.stefano.enuventory.ui.pages.ApprovalPage
 import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
@@ -43,7 +40,40 @@ import dev.stefano.enuventory.ui.pages.SettingsAdminPage
 import dev.stefano.enuventory.ui.pages.SettingsUserPage
 import dev.stefano.enuventory.ui.pages.TambahAssetPage
 import dev.stefano.enuventory.ui.pages.UploadBuktiFotoPage
+import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
+import dev.stefano.enuventory.ui.screen.approval.DetailRequestViewModel
+import dev.stefano.enuventory.ui.screen.asset.DetailAssetAdminViewModel
+import dev.stefano.enuventory.ui.screen.asset.DetailAssetUserViewModel
+import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
+import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
+import dev.stefano.enuventory.ui.screen.auth.LoginScreen
+import dev.stefano.enuventory.ui.screen.history.DetailRiwayatViewModel
+import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
+import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
+import dev.stefano.enuventory.ui.screen.home.HomeViewModel
+import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
 import dev.stefano.enuventory.ui.theme.EnuTheme
+
+// Tab-tab di bottom bar dianggap "sejajar" (bukan drill-down), jadi transisinya
+// cukup fade — slide terarah cuma dipakai untuk navigasi push/pop ke halaman detail.
+private fun NavBackStackEntry.isTopLevel(): Boolean =
+    destination.hasRoute<EnuRoute.Home>() ||
+            destination.hasRoute<EnuRoute.History>() ||
+            destination.hasRoute<EnuRoute.Approval>() ||
+            destination.hasRoute<EnuRoute.Settings>()
+
+// Durasi mengikuti "rhythm" motion design: gerakan utama lebih lama dari companion
+// animation (fade/scale), dan exit lebih singkat dari enter karena user lebih notice
+// kedatangan daripada kepergian.
+private const val DURATION_LONG_MS = 500   // slide utama (enter & pop exit)
+private const val DURATION_MEDIUM_MS = 400 // companion: fade & scale saat enter
+private const val DURATION_SHORT_MS = 250  // exit forward (cepat, tidak jadi fokus)
+private const val TAB_FADE_DURATION_MS = 300
+
+private val EaseOutQuart = CubicBezierEasing(0.25f, 1f, 0.5f, 1f)
+private val EaseOutBack = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1f)
+private val EaseInOutCubic = CubicBezierEasing(0.65f, 0f, 0.35f, 1f)
+private val EaseInCubic = CubicBezierEasing(0.32f, 0f, 0.67f, 0f)
 
 /**
  * NavGraph utama aplikasi.
@@ -78,7 +108,52 @@ fun EnuNavGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = {
+            if (initialState.isTopLevel() && targetState.isTopLevel()) {
+                fadeIn(animationSpec = tween(TAB_FADE_DURATION_MS))
+            } else {
+                // Masuk dari 50% lebar layar, sedikit "overshoot" di scale biar kerasa nempel.
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(DURATION_LONG_MS, easing = EaseOutQuart),
+                    initialOffset = { fullOffset -> fullOffset / 2 }
+                ) + fadeIn(
+                    initialAlpha = 0.05f,
+                    animationSpec = tween(DURATION_MEDIUM_MS, easing = LinearOutSlowInEasing)
+                ) + scaleIn(
+                    initialScale = 0.90f,
+                    animationSpec = tween(DURATION_MEDIUM_MS, easing = EaseOutBack)
+                )
+            }
+        },
+        exitTransition = {
+            if (initialState.isTopLevel() && targetState.isTopLevel()) {
+                fadeOut(animationSpec = tween(TAB_FADE_DURATION_MS))
+            } else {
+                // Halaman lama cuma mundur 25% (asimetris dgn enter) & cepat karena bukan fokus user.
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(DURATION_SHORT_MS, easing = EaseInOutCubic),
+                    targetOffset = { fullOffset -> fullOffset / 4 }
+                ) + fadeOut(animationSpec = tween(DURATION_SHORT_MS)) +
+                        scaleOut(targetScale = 0.96f, animationSpec = tween(DURATION_SHORT_MS))
+            }
+        },
+        popEnterTransition = {
+            // Balik: masuk dari kiri, scale-in ringan biar gak berasa "njedug".
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(DURATION_LONG_MS, easing = EaseOutQuart)
+            ) + scaleIn(initialScale = 0.93f, animationSpec = tween(DURATION_MEDIUM_MS))
+        },
+        popExitTransition = {
+            // Halaman yang ditinggalkan membesar dikit (1.05) untuk kesan "maju ke arah user".
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(DURATION_LONG_MS, easing = EaseInCubic)
+            ) + scaleOut(targetScale = 1.05f, animationSpec = tween(DURATION_LONG_MS))
+        }
     ) {
 
         // ── Auth ────────────────────────────────────────────────────────────
