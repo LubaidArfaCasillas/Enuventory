@@ -10,7 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +27,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.stefano.enuventory.ui.theme.EnuTheme
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnuBorrowDialog(
     onDismissRequest: () -> Unit,
@@ -31,6 +41,40 @@ fun EnuBorrowDialog(
 ) {
     var pesanInput by remember { mutableStateOf("") }
     var estimasiInput by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            selectableDates = object : SelectableDates {
+                // Estimasi kembali gak masuk akal kalau di masa lalu
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean =
+                    utcTimeMillis >= startOfTodayUtcMillis()
+            }
+        )
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            estimasiInput = formatEstimasiDate(millis)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Batal")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Dialog(onDismissRequest = { if (!isSubmitting) onDismissRequest() }) {
         Box(
@@ -57,7 +101,7 @@ fun EnuBorrowDialog(
                             color = EnuTheme.colors.contentSignalErrorDefault
                         )
                     }
-                    EnuSearchField(
+                    EnuTextField(
                         value = pesanInput,
                         onValueChange = { pesanInput = it },
                         placeholder = "Tuliskan keperluanmu disini..."
@@ -77,10 +121,12 @@ fun EnuBorrowDialog(
                             color = EnuTheme.colors.contentSignalErrorDefault
                         )
                     }
-                    EnuSearchField(
+                    EnuTextField(
                         value = estimasiInput,
-                        onValueChange = { estimasiInput = it },
-                        placeholder = "DD-MM-YY"
+                        onValueChange = {},
+                        placeholder = "Pilih tanggal",
+                        readOnly = true,
+                        onClick = { showDatePicker = true }
                     )
                 }
 
@@ -98,4 +144,23 @@ fun EnuBorrowDialog(
             }
         }
     }
+}
+
+// DatePicker mengembalikan millis UTC di awal hari tanggal terpilih -- format eksplisit
+// pakai timezone UTC di sini biar gak geser 1 hari tergantung timezone device.
+private fun formatEstimasiDate(utcMillis: Long): String {
+    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }
+    return formatter.format(java.util.Date(utcMillis))
+}
+
+private fun startOfTodayUtcMillis(): Long {
+    val calendar = java.util.Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+        set(java.util.Calendar.HOUR_OF_DAY, 0)
+        set(java.util.Calendar.MINUTE, 0)
+        set(java.util.Calendar.SECOND, 0)
+        set(java.util.Calendar.MILLISECOND, 0)
+    }
+    return calendar.timeInMillis
 }

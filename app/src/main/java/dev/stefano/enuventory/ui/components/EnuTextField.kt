@@ -1,6 +1,8 @@
 package dev.stefano.enuventory.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,12 +12,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -35,8 +40,22 @@ fun EnuTextField(
     isRequired: Boolean = false,
     leadingIcon: Int? = null,
     trailingIcon: Int? = null,
-    onTrailingIconClick: (() -> Unit)? = null
+    onTrailingIconClick: (() -> Unit)? = null,
+    readOnly: Boolean = false,
+    onClick: (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
+    // Dipakai buat field readOnly yang perannya cuma nampilin nilai & buka picker lain
+    // (mis. DatePicker) saat di-tap -- OutlinedTextField readOnly tetap butuh interactionSource
+    // sendiri karena gak ada callback onClick bawaan.
+    val tapInteractionSource = remember { MutableInteractionSource() }
+    if (onClick != null) {
+        LaunchedEffect(tapInteractionSource) {
+            tapInteractionSource.interactions.collect { interaction ->
+                if (interaction is PressInteraction.Release) onClick()
+            }
+        }
+    }
     Column(modifier = modifier.fillMaxWidth()) {
         if (label != null) {
             Row {
@@ -60,6 +79,9 @@ fun EnuTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
+            readOnly = readOnly,
+            interactionSource = tapInteractionSource,
+            keyboardOptions = keyboardOptions,
             textStyle = EnuTheme.typography.ui.labels.normalCase.base.copy(
                 color = EnuTheme.colors.contentDefaultPrimary
             ),

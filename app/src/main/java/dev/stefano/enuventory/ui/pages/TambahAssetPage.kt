@@ -1,5 +1,8 @@
 package dev.stefano.enuventory.ui.pages
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,12 +39,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.stefano.enuventory.R
+import dev.stefano.enuventory.ui.common.EnuErrorState
+import dev.stefano.enuventory.ui.common.UiState
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
 import dev.stefano.enuventory.ui.components.EnuButton
@@ -48,14 +58,6 @@ import dev.stefano.enuventory.ui.components.EnuButtonVariant
 import dev.stefano.enuventory.ui.components.EnuTextField
 import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
-import dev.stefano.enuventory.ui.common.UiState
-import dev.stefano.enuventory.ui.common.EnuErrorState
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -278,10 +280,11 @@ fun TambahAssetPage(
 
                 EnuTextField(
                     value = stockInput,
-                    onValueChange = { stockInput = it },
+                    onValueChange = { input -> if (input.all(Char::isDigit)) stockInput = input },
                     placeholder = "Enter stock",
                     label = "Stock",
-                    isRequired = true
+                    isRequired = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
                 Box(modifier = Modifier.fillMaxWidth()) {
