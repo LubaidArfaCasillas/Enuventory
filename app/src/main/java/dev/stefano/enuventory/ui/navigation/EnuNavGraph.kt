@@ -331,14 +331,14 @@ fun EnuNavGraph(
                     onBottomBarClick(route)
                 },
                 onBackClick = { navController.popBackStack() },
-                onAddPhotoClick = {},
-                onTambahAssetClick = { title, stock, status, category, description ->
+                onTambahAssetClick = { title, stock, status, category, description, imageBytes ->
                     tambahAssetViewModel.addAsset(
                         title = title,
                         stockStr = stock,
                         statusStr = status,
                         category = category,
                         description = description,
+                        imageBytes = imageBytes,
                         onSuccess = { navController.popBackStack() }
                     )
                 },

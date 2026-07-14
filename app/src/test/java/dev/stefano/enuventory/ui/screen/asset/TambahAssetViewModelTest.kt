@@ -3,7 +3,9 @@ package dev.stefano.enuventory.ui.screen.asset
 import dev.stefano.enuventory.domain.model.AssetStatus
 import dev.stefano.enuventory.domain.usecase.AddAssetUseCase
 import dev.stefano.enuventory.domain.usecase.GetAssetByIdUseCase
+import dev.stefano.enuventory.domain.usecase.UploadAssetImageUseCase
 import dev.stefano.enuventory.fake.FakeAssetRepository
+import dev.stefano.enuventory.fake.FakeStorageRepository
 import dev.stefano.enuventory.fake.MainDispatcherRule
 import dev.stefano.enuventory.ui.common.UiState
 import kotlinx.coroutines.test.runTest
@@ -24,15 +26,18 @@ class TambahAssetViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var assetRepository: FakeAssetRepository
+    private lateinit var storageRepository: FakeStorageRepository
 
     private fun createViewModel() = TambahAssetViewModel(
         addAssetUseCase = AddAssetUseCase(assetRepository),
-        getAssetByIdUseCase = GetAssetByIdUseCase(assetRepository)
+        getAssetByIdUseCase = GetAssetByIdUseCase(assetRepository),
+        uploadAssetImageUseCase = UploadAssetImageUseCase(storageRepository)
     )
 
     @Before
     fun setUp() {
         assetRepository = FakeAssetRepository()
+        storageRepository = FakeStorageRepository()
     }
 
     @Test
@@ -117,5 +122,70 @@ class TambahAssetViewModelTest {
 
             assertEquals(0, assetRepository.addAssetCalls.first().stock)
             assertEquals("All", assetRepository.addAssetCalls.first().category)
+        }
+
+    @Test
+    fun `addAsset without image leaves imageUrl null and skips upload`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = createViewModel()
+
+            viewModel.addAsset(
+                title = "Proyektor Epson",
+                stockStr = "1",
+                statusStr = "Tersedia",
+                category = "Elektronik",
+                description = "",
+                imageBytes = null,
+                onSuccess = {}
+            )
+
+            assertEquals(0, storageRepository.uploadCalls.size)
+            assertEquals(null, assetRepository.addAssetCalls.first().imageUrl)
+        }
+
+    @Test
+    fun `addAsset with image uploads it and sets imageUrl from the storage result`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = createViewModel()
+            val fakeImageBytes = byteArrayOf(1, 2, 3)
+
+            viewModel.addAsset(
+                title = "Proyektor Epson",
+                stockStr = "1",
+                statusStr = "Tersedia",
+                category = "Elektronik",
+                description = "",
+                imageBytes = fakeImageBytes,
+                onSuccess = {}
+            )
+
+            assertEquals(1, storageRepository.uploadCalls.size)
+            val (uploadedAssetId, uploadedBytes) = storageRepository.uploadCalls.first()
+            assertTrue(uploadedBytes.contentEquals(fakeImageBytes))
+            val added = assetRepository.addAssetCalls.first()
+            assertEquals(uploadedAssetId, added.id)
+            assertEquals("https://fake-storage.test/assets/$uploadedAssetId.jpg", added.imageUrl)
+        }
+
+    @Test
+    fun `addAsset surfaces an error state when image upload fails`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            storageRepository.uploadError = IllegalStateException("Storage down")
+            val viewModel = createViewModel()
+            var onSuccessCalled = false
+
+            viewModel.addAsset(
+                title = "Proyektor Epson",
+                stockStr = "1",
+                statusStr = "Tersedia",
+                category = "Elektronik",
+                description = "",
+                imageBytes = byteArrayOf(1, 2, 3),
+                onSuccess = { onSuccessCalled = true }
+            )
+
+            assertTrue(onSuccessCalled.not())
+            assertTrue(viewModel.addState.value is UiState.Error)
+            assertEquals(0, assetRepository.addAssetCalls.size)
         }
 }

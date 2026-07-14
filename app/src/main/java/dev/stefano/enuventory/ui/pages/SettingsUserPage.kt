@@ -36,6 +36,7 @@ import dev.stefano.enuventory.R
 import dev.stefano.enuventory.domain.model.AppThemeMode
 import dev.stefano.enuventory.ui.components.EnuBottomBar
 import dev.stefano.enuventory.ui.components.EnuBottomBarItemData
+import dev.stefano.enuventory.ui.components.EnuConfirmationDialog
 import dev.stefano.enuventory.ui.components.EnuThemeSelector
 import dev.stefano.enuventory.ui.components.EnuTopBar
 import dev.stefano.enuventory.ui.theme.EnuTheme
@@ -53,6 +54,19 @@ fun SettingsUserPage(
     modifier: Modifier = Modifier,
     isAdmin: Boolean = false
 ) {
+    var showSignOutConfirmation by remember { mutableStateOf(false) }
+
+    if (showSignOutConfirmation) {
+        EnuConfirmationDialog(
+            title = "Sign Out",
+            message = "Kamu yakin ingin keluar dari akun ini?",
+            onConfirmClick = {
+                showSignOutConfirmation = false
+                onSignOutClick()
+            },
+            onDismissRequest = { showSignOutConfirmation = false }
+        )
+    }
 
     Scaffold(
         modifier = modifier,
@@ -189,7 +203,7 @@ fun SettingsUserPage(
                     .height(48.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(EnuTheme.colors.backgroundSignalErrorMediumDefault)
-                    .clickable { onSignOutClick() },
+                    .clickable { showSignOutConfirmation = true },
                 contentAlignment = Alignment.Center
             ) {
                 Text(

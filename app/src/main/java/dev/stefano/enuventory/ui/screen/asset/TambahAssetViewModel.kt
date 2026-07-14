@@ -7,6 +7,7 @@ import dev.stefano.enuventory.domain.model.Asset
 import dev.stefano.enuventory.domain.model.AssetStatus
 import dev.stefano.enuventory.domain.usecase.AddAssetUseCase
 import dev.stefano.enuventory.domain.usecase.GetAssetByIdUseCase
+import dev.stefano.enuventory.domain.usecase.UploadAssetImageUseCase
 import dev.stefano.enuventory.domain.util.AssetIdGenerator
 import dev.stefano.enuventory.ui.common.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TambahAssetViewModel @Inject constructor(
     private val addAssetUseCase: AddAssetUseCase,
-    private val getAssetByIdUseCase: GetAssetByIdUseCase
+    private val getAssetByIdUseCase: GetAssetByIdUseCase,
+    private val uploadAssetImageUseCase: UploadAssetImageUseCase
 ) : ViewModel() {
 
     private companion object {
@@ -34,6 +36,7 @@ class TambahAssetViewModel @Inject constructor(
         statusStr: String,
         category: String,
         description: String,
+        imageBytes: ByteArray? = null,
         onSuccess: () -> Unit
     ) {
         val stock = stockStr.toIntOrNull() ?: 0
@@ -47,13 +50,15 @@ class TambahAssetViewModel @Inject constructor(
             _addState.value = UiState.Loading
             try {
                 val assetId = generateUniqueAssetId()
+                val imageUrl = imageBytes?.let { uploadAssetImageUseCase(assetId, it) }
                 val asset = Asset(
                     id = assetId,
                     title = title,
                     stock = stock,
                     status = status,
                     category = category.ifBlank { "All" },
-                    description = description
+                    description = description,
+                    imageUrl = imageUrl
                 )
                 addAssetUseCase(asset)
                 _addState.value = UiState.Success(Unit)

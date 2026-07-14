@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -66,8 +67,14 @@ fun TambahAssetPage(
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onBackClick: () -> Unit,
-    onAddPhotoClick: () -> Unit,
-    onTambahAssetClick: (title: String, stock: String, status: String, category: String, description: String) -> Unit,
+    onTambahAssetClick: (
+        title: String,
+        stock: String,
+        status: String,
+        category: String,
+        description: String,
+        imageBytes: ByteArray?
+    ) -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -212,6 +219,7 @@ fun TambahAssetPage(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
+                    .imePadding()
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
@@ -360,12 +368,23 @@ fun TambahAssetPage(
                     text = "Tambah Asset",
                     variant = buttonVariant,
                     onClick = {
+                        val imageBytes = bitmap?.let { bmp ->
+                            java.io.ByteArrayOutputStream().use { stream ->
+                                bmp.compress(
+                                    android.graphics.Bitmap.CompressFormat.JPEG,
+                                    80,
+                                    stream
+                                )
+                                stream.toByteArray()
+                            }
+                        }
                         onTambahAssetClick(
                             titleInput,
                             stockInput,
                             statusInput,
                             categoryInput,
-                            descriptionInput
+                            descriptionInput,
+                            imageBytes
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -386,8 +405,7 @@ fun TambahAssetPagePreviewLight() {
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
-            onAddPhotoClick = {},
-            onTambahAssetClick = { _, _, _, _, _ -> },
+            onTambahAssetClick = { _, _, _, _, _, _ -> },
             onRetryClick = {}
         )
     }
@@ -402,8 +420,7 @@ fun TambahAssetPagePreviewDark() {
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
-            onAddPhotoClick = {},
-            onTambahAssetClick = { _, _, _, _, _ -> },
+            onTambahAssetClick = { _, _, _, _, _, _ -> },
             onRetryClick = {}
         )
     }

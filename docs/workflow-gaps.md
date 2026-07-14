@@ -74,13 +74,19 @@ returnAssetUseCase(recordId, dummyProofUrl)
 Foto yang "di-capture" user di `UploadBuktiFotoPage` tidak pernah benar-benar disimpan/di-upload
 — `onCapturePhoto()` di ViewModel cuma ganti UI state ke `PreviewImage`, tidak ada file/bitmap
 yang disimpan. `submitReturn()` selalu mengirim URL placeholder yang sama, terlepas dari apa yang
-di-capture. Dependency `firebase-storage` sudah ada di `build.gradle.kts` tapi belum dipakai sama
-sekali di kode manapun (`grep -rn "FirebaseStorage"` cuma hit di `FirebaseModule`/DI, bukan
-dipakai buat upload beneran — perlu dicek ulang kalau sudah berubah).
+di-capture.
 
-**Saran:** implementasikan capture foto asli (CameraX/`ActivityResultContracts.TakePicture`),
-upload ke Firebase Storage di `ReturnAssetViewModel` atau lewat repository baru
-(`StorageRepository`), lalu pakai URL hasil upload di `returnAssetUseCase(recordId, uploadedUrl)`.
+**Update**: `domain/repository/StorageRepository.kt` + `data/repository/StorageRepositoryImpl.kt`
+sekarang sudah ada dan dipakai beneran untuk upload **foto asset** (fitur "Tambah Asset", lihat
+`TambahAssetViewModel.addAsset()` + `UploadAssetImageUseCase`) — jadi klaim "belum dipakai sama
+sekali" di atas sudah gak akurat untuk kasus itu. Tapi alur **pengembalian** ini masih belum
+disambungkan ke repository yang sama; masih pakai `dummyProofUrl` di atas.
+
+**Saran:** implementasikan capture foto asli (CameraX/`ActivityResultContracts.TakePicture`) di
+`UploadBuktiFotoPage`/`ReturnAssetViewModel`, lalu panggil `UploadAssetImageUseCase` yang sudah
+ada (atau bikin use case sejenis, mis. `UploadReturnProofUseCase`, kalau mau path Storage yang
+beda dari foto asset) buat upload beneran, dan pakai URL hasilnya di
+`returnAssetUseCase(recordId, uploadedUrl)`.
 
 ## 5. ~~Bug: ID asset bisa collision & diam-diam overwrite asset lain~~ (FIXED)
 
