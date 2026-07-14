@@ -81,7 +81,7 @@ fun HomeUserPage(
                 EnuSearchField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = "Search Placeholder"
+                    placeholder = "Search"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
