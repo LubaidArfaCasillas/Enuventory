@@ -6,6 +6,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.stefano.enuventory.domain.model.Asset
 import dev.stefano.enuventory.domain.model.AssetStatus
 import dev.stefano.enuventory.domain.usecase.AddAssetUseCase
+import dev.stefano.enuventory.domain.usecase.GetAssetByIdUseCase
+import dev.stefano.enuventory.domain.util.AssetIdGenerator
 import dev.stefano.enuventory.ui.common.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,8 +17,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TambahAssetViewModel @Inject constructor(
-    private val addAssetUseCase: AddAssetUseCase
+    private val addAssetUseCase: AddAssetUseCase,
+    private val getAssetByIdUseCase: GetAssetByIdUseCase
 ) : ViewModel() {
+
+    private companion object {
+        const val MAX_ID_GENERATION_ATTEMPTS = 5
+    }
 
     private val _addState = MutableStateFlow<UiState<Unit>>(UiState.Success(Unit))
     val addState: StateFlow<UiState<Unit>> = _addState.asStateFlow()
@@ -39,8 +46,7 @@ class TambahAssetViewModel @Inject constructor(
         viewModelScope.launch {
             _addState.value = UiState.Loading
             try {
-                // Generate simple unique ID
-                val assetId = "HW-${(System.currentTimeMillis() % 100000).toString().padStart(5, '0')}"
+                val assetId = generateUniqueAssetId()
                 val asset = Asset(
                     id = assetId,
                     title = title,
@@ -60,5 +66,17 @@ class TambahAssetViewModel @Inject constructor(
 
     fun resetState() {
         _addState.value = UiState.Success(Unit)
+    }
+
+    /**
+     * Generate ID lalu cek ke repository apakah sudah dipakai asset lain -- perlu karena
+     * `AssetRepositoryImpl.addAsset()` pakai `.set()` yang diam-diam overwrite kalau ID bentrok.
+     */
+    private suspend fun generateUniqueAssetId(): String {
+        repeat(MAX_ID_GENERATION_ATTEMPTS) {
+            val candidate = AssetIdGenerator.generate()
+            if (getAssetByIdUseCase(candidate) == null) return candidate
+        }
+        throw IllegalStateException("Gagal membuat ID asset yang unik, coba lagi")
     }
 }

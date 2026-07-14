@@ -6,10 +6,6 @@
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="Light - PengembalianPagePreviewLight">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DialogSelection />
-      </SelectionState>
       <SelectionState runConfigName="Light - ScanQRPagePreviewLight">
         <option name="selectionMode" value="DROPDOWN" />
         <DialogSelection />

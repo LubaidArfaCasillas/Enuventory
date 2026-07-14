@@ -14,14 +14,33 @@ class FakeAssetRepository : AssetRepository {
     val updateAssetCalls = mutableListOf<Asset>()
     val deleteAssetCalls = mutableListOf<String>()
 
+    /**
+     * Buat mensimulasikan ID generator yang bentrok N kali pertama tanpa perlu
+     * mengontrol randomness beneran: selama > 0, [getAssetById] akan bilang "sudah dipakai"
+     * (return non-null) untuk ID apapun yang ditanyakan, lalu di-decrement.
+     */
+    var collideForNextNLookups = 0
+
     fun setAssets(assets: List<Asset>) {
         assetsFlow.value = assets
     }
 
     override fun getAssets(): Flow<List<Asset>> = assetsFlow
 
-    override suspend fun getAssetById(assetId: String): Asset? =
-        assetsFlow.value.find { it.id == assetId }
+    override suspend fun getAssetById(assetId: String): Asset? {
+        if (collideForNextNLookups > 0) {
+            collideForNextNLookups--
+            return assetsFlow.value.firstOrNull() ?: Asset(
+                id = assetId,
+                title = "Simulated collision",
+                stock = 0,
+                status = dev.stefano.enuventory.domain.model.AssetStatus.Available,
+                category = "",
+                description = ""
+            )
+        }
+        return assetsFlow.value.find { it.id == assetId }
+    }
 
     override suspend fun addAsset(asset: Asset) {
         addAssetCalls += asset

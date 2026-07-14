@@ -82,7 +82,28 @@ dipakai buat upload beneran — perlu dicek ulang kalau sudah berubah).
 upload ke Firebase Storage di `ReturnAssetViewModel` atau lewat repository baru
 (`StorageRepository`), lalu pakai URL hasil upload di `returnAssetUseCase(recordId, uploadedUrl)`.
 
-## 5. Tidak ada validasi stock/concurrency saat approve
+## 5. ~~Bug: ID asset bisa collision & diam-diam overwrite asset lain~~ (FIXED)
+
+Ketemu waktu mendesain format QR code untuk asset (QR bakal encode `assetId`, jadi ID-nya
+harus benar-benar unik). `TambahAssetViewModel.kt` sebelumnya generate ID lewat:
+
+```kotlin
+val assetId = "HW-${(System.currentTimeMillis() % 100000).toString().padStart(5, '0')}"
+```
+
+Collision-nya cuma soal waktu — pola berulang tiap 100 detik (`% 100000` ms). Parahnya,
+`AssetRepositoryImpl.addAsset()` pakai `.document(asset.id).set(...)` (bukan `.add()`), jadi
+kalau ID bentrok, asset lama **ke-overwrite diam-diam** tanpa error/warning apapun.
+
+**Sudah diperbaiki**: ID sekarang di-generate lewat `domain/util/AssetIdGenerator.kt` — prefix
+`HW-` + 5 karakter acak dari alfabet aman-dibaca (tanpa 0/O/1/I/L/U, gaya Crockford base32,
+~24 juta kombinasi). `TambahAssetViewModel.generateUniqueAssetId()` juga sekarang cek dulu ke
+`GetAssetByIdUseCase` sebelum pakai ID hasil generate, retry sampai 5x kalau ternyata sudah
+dipakai, baru gagal dengan error state yang jelas kalau semua percobaan collision (kemungkinan
+ini sangat kecil, tapi sekarang di-cover eksplisit, bukan cuma diperkecil probabilitasnya).
+Dites di `AssetIdGeneratorTest.kt` & `TambahAssetViewModelTest.kt`.
+
+## 6. Tidak ada validasi stock/concurrency saat approve
 
 Belum dikonfirmasi lewat testing manual (ada di checklist QA), tapi dari membaca
 `BorrowRepositoryImpl.approveRequest()` — tidak ada pengecekan sisa stock asset sebelum
