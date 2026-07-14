@@ -36,6 +36,10 @@ sealed interface EnuRoute {
     data class EditAsset(val assetId: String) : EnuRoute
     @Serializable
     data object KelolaKategori : EnuRoute
+    @Serializable
+    data object KelolaUser : EnuRoute
+    @Serializable
+    data class DetailUserAdmin(val userId: String) : EnuRoute
     @Serializable data class DetailRequest(val recordId: String) : EnuRoute
 
     // ── Shared screens ───────────────────────────────────────────────────────

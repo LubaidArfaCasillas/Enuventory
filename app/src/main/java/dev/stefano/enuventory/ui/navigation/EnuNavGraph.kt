@@ -31,11 +31,13 @@ import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
 import dev.stefano.enuventory.ui.pages.DetailRequestPage
 import dev.stefano.enuventory.ui.pages.DetailRiwayatPage
+import dev.stefano.enuventory.ui.pages.DetailUserAdminPage
 import dev.stefano.enuventory.ui.pages.EditAssetPage
 import dev.stefano.enuventory.ui.pages.HistoryPage
 import dev.stefano.enuventory.ui.pages.HomeAdminPage
 import dev.stefano.enuventory.ui.pages.HomeUserPage
 import dev.stefano.enuventory.ui.pages.KelolaKategoriPage
+import dev.stefano.enuventory.ui.pages.KelolaUserPage
 import dev.stefano.enuventory.ui.pages.PengembalianPage
 import dev.stefano.enuventory.ui.pages.ScanQRPage
 import dev.stefano.enuventory.ui.pages.SettingsAdminPage
@@ -56,6 +58,8 @@ import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
 import dev.stefano.enuventory.ui.screen.home.HomeViewModel
 import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
+import dev.stefano.enuventory.ui.screen.user.DetailUserAdminViewModel
+import dev.stefano.enuventory.ui.screen.user.KelolaUserViewModel
 import dev.stefano.enuventory.ui.theme.EnuTheme
 
 // Tab-tab di bottom bar dianggap "sejajar" (bukan drill-down), jadi transisinya
@@ -269,6 +273,7 @@ fun EnuNavGraph(
                     },
                     onSignOutClick = { settingsViewModel.signOut() },
                     onKelolaKategoriClick = { navController.navigate(EnuRoute.KelolaKategori) },
+                    onKelolaUserClick = { navController.navigate(EnuRoute.KelolaUser) },
                     isAdmin = true
                 )
             } else {
@@ -491,6 +496,70 @@ fun EnuNavGraph(
                     kelolaKategoriViewModel.deleteCategory(category, onSuccess)
                 },
                 onClearActionError = { kelolaKategoriViewModel.clearActionError() },
+                onRetryClick = {}
+            )
+        }
+
+        // ── Kelola User (Admin) ──────────────────────────────────────────────
+        composable<EnuRoute.KelolaUser> {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val kelolaUserViewModel: KelolaUserViewModel = hiltViewModel()
+            val usersState by kelolaUserViewModel.usersState.collectAsStateWithLifecycle()
+            val actionError by kelolaUserViewModel.actionError.collectAsStateWithLifecycle()
+
+            KelolaUserPage(
+                usersState = usersState,
+                actionError = actionError,
+                currentRoute = currentRoute,
+                onBottomBarItemClick = { item ->
+                    val navRoute = when (item.route) {
+                        "home" -> EnuRoute.Home
+                        "approval" -> EnuRoute.Approval
+                        "settings" -> EnuRoute.Settings
+                        else -> EnuRoute.Home
+                    }
+                    onBottomBarClick(navRoute)
+                },
+                onBackClick = { navController.popBackStack() },
+                onUserClick = { uid -> navController.navigate(EnuRoute.DetailUserAdmin(uid)) },
+                onAddUser = { name, email, password, onSuccess ->
+                    kelolaUserViewModel.createUser(name, email, password, onSuccess)
+                },
+                onClearActionError = { kelolaUserViewModel.clearActionError() },
+                onRetryClick = {}
+            )
+        }
+
+        // ── Detail User (Admin) ──────────────────────────────────────────────
+        composable<EnuRoute.DetailUserAdmin> {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val detailUserAdminViewModel: DetailUserAdminViewModel = hiltViewModel()
+            val userState by detailUserAdminViewModel.userState.collectAsStateWithLifecycle()
+            val historyState by detailUserAdminViewModel.historyState.collectAsStateWithLifecycle()
+            val actionError by detailUserAdminViewModel.actionError.collectAsStateWithLifecycle()
+
+            DetailUserAdminPage(
+                userState = userState,
+                historyState = historyState,
+                actionError = actionError,
+                currentRoute = currentRoute,
+                onBottomBarItemClick = { item ->
+                    val navRoute = when (item.route) {
+                        "home" -> EnuRoute.Home
+                        "approval" -> EnuRoute.Approval
+                        "settings" -> EnuRoute.Settings
+                        else -> EnuRoute.Home
+                    }
+                    onBottomBarClick(navRoute)
+                },
+                onBackClick = { navController.popBackStack() },
+                onRenameUser = { name, onSuccess ->
+                    detailUserAdminViewModel.renameUser(name, onSuccess)
+                },
+                onSetDisabled = { disabled, onSuccess ->
+                    detailUserAdminViewModel.setDisabled(disabled, onSuccess)
+                },
+                onClearActionError = { detailUserAdminViewModel.clearActionError() },
                 onRetryClick = {}
             )
         }

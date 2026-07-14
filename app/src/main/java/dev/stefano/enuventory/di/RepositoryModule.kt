@@ -9,11 +9,13 @@ import dev.stefano.enuventory.data.repository.AuthRepositoryImpl
 import dev.stefano.enuventory.data.repository.BorrowRepositoryImpl
 import dev.stefano.enuventory.data.repository.CategoryRepositoryImpl
 import dev.stefano.enuventory.data.repository.StorageRepositoryImpl
+import dev.stefano.enuventory.data.repository.UserRepositoryImpl
 import dev.stefano.enuventory.domain.repository.AssetRepository
 import dev.stefano.enuventory.domain.repository.AuthRepository
 import dev.stefano.enuventory.domain.repository.BorrowRepository
 import dev.stefano.enuventory.domain.repository.CategoryRepository
 import dev.stefano.enuventory.domain.repository.StorageRepository
+import dev.stefano.enuventory.domain.repository.UserRepository
 import javax.inject.Singleton
 
 /**
@@ -64,4 +66,10 @@ abstract class RepositoryModule {
     abstract fun bindCategoryRepository(
         impl: CategoryRepositoryImpl
     ): CategoryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        impl: UserRepositoryImpl
+    ): UserRepository
 }

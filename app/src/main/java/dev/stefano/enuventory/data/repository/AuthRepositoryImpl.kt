@@ -8,7 +8,6 @@ import dev.stefano.enuventory.domain.repository.AuthRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -36,7 +35,8 @@ class AuthRepositoryImpl @Inject constructor(
                                 uid = firebaseUser.uid,
                                 name = doc.getString("name") ?: firebaseUser.displayName ?: "",
                                 email = firebaseUser.email ?: "",
-                                role = role
+                                role = role,
+                                disabled = doc.getBoolean("disabled") ?: false
                             )
                         )
                     }
@@ -61,7 +61,18 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun signIn(email: String, password: String) {
-        firebaseAuth.signInWithEmailAndPassword(email, password).await()
+        val authResult = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+        val uid = authResult.user?.uid ?: return
+
+        // Akun yang dinonaktifkan admin (lihat UserRepositoryImpl.setUserDisabled) gak boleh
+        // lanjut login -- Firebase Auth sendiri gak tahu soal ini, jadi dicek manual dari profil
+        // Firestore-nya sebelum dianggap berhasil.
+        val isDisabled = firestore.collection("users").document(uid).get().await()
+            .getBoolean("disabled") ?: false
+        if (isDisabled) {
+            firebaseAuth.signOut()
+            throw IllegalStateException("Akun kamu telah dinonaktifkan oleh admin.")
+        }
     }
 
     override suspend fun signOut() {

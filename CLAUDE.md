@@ -71,7 +71,15 @@ Standard Clean Architecture, three layers, strict dependency direction
       history for a prior bug this pattern fixes).
 - **`di/`** — Hilt modules. `RepositoryModule` binds each `XxxRepository` interface to its
   `XxxRepositoryImpl` with `@Binds @Singleton`. `FirebaseModule` provides `FirebaseAuth`/
-  `FirebaseFirestore` instances. `SupabaseModule` provides the `SupabaseClient` (Storage plugin
+  `FirebaseFirestore` instances, plus a **second**, `@SecondaryAuth`-qualified `FirebaseAuth`
+  bound to its own secondary `FirebaseApp` — used solely by `UserRepositoryImpl.createUser()` so
+  Admin can create a real Firebase Auth login for a new RegularUser account without getting
+  signed out of their own Admin session (`createUserWithEmailAndPassword` on the *primary*
+  instance would otherwise sign in as the new user). There is no Firebase Admin SDK/Cloud
+  Functions in this project, so this client-only trick is also why account **deletion** is a
+  soft "disabled" flag on the user's Firestore doc (checked in `AuthRepositoryImpl.signIn()`) —
+  actually revoking another user's Auth credential isn't possible from a pure client app.
+  `SupabaseModule` provides the `SupabaseClient` (Storage plugin
   installed) used for file uploads. `DataStoreModule` provides the Preferences DataStore used for
   theme persistence.
 - **`ui/`**
