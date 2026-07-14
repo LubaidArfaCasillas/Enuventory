@@ -154,6 +154,7 @@ fun HomeAdminPage(
                                     id = item.id,
                                     stock = item.stock,
                                     status = item.status.toUiStatus(),
+                                    imageUrl = item.imageUrl,
                                     modifier = Modifier.clickable { onAssetClick(item.id) }
                                 )
                             }

@@ -81,6 +81,7 @@ fun TambahAssetPage(
     var titleInput by remember { mutableStateOf("") }
     var stockInput by remember { mutableStateOf("") }
     var descriptionInput by remember { mutableStateOf("") }
+    var validationError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     var imageUri by remember { mutableStateOf<android.net.Uri?>(null) }
@@ -303,14 +304,8 @@ fun TambahAssetPage(
                         label = "Status",
                         isRequired = true,
                         trailingIcon = R.drawable.ic_down,
-                        modifier = Modifier.clickable { isStatusDropdownExpanded = true }
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(top = 24.dp)
-                            .clickable { isStatusDropdownExpanded = true }
+                        readOnly = true,
+                        onClick = { isStatusDropdownExpanded = true }
                     )
                     DropdownMenu(
                         expanded = isStatusDropdownExpanded,
@@ -343,14 +338,9 @@ fun TambahAssetPage(
                         onValueChange = {},
                         placeholder = "Optional Category",
                         label = "Category",
-                        trailingIcon = R.drawable.ic_down
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .padding(top = 24.dp)
-                            .clickable { showCategoryDialog = true }
+                        trailingIcon = R.drawable.ic_down,
+                        readOnly = true,
+                        onClick = { showCategoryDialog = true }
                     )
                 }
 
@@ -361,6 +351,14 @@ fun TambahAssetPage(
                     label = "Description"
                 )
 
+                if (validationError != null) {
+                    Text(
+                        text = validationError.orEmpty(),
+                        style = EnuTheme.typography.ui.labels.normalCase.small,
+                        color = EnuTheme.colors.contentSignalErrorDefault
+                    )
+                }
+
                 val buttonVariant =
                     if (state is UiState.Loading) EnuButtonVariant.Loading else EnuButtonVariant.Normal
 
@@ -368,24 +366,36 @@ fun TambahAssetPage(
                     text = "Tambah Asset",
                     variant = buttonVariant,
                     onClick = {
-                        val imageBytes = bitmap?.let { bmp ->
-                            java.io.ByteArrayOutputStream().use { stream ->
-                                bmp.compress(
-                                    android.graphics.Bitmap.CompressFormat.JPEG,
-                                    80,
-                                    stream
-                                )
-                                stream.toByteArray()
-                            }
+                        validationError = when {
+                            titleInput.isBlank() -> "Title wajib diisi"
+                            stockInput.isBlank() -> "Stock wajib diisi"
+                            stockInput.toIntOrNull() == null || stockInput.toInt() <= 0 ->
+                                "Stock harus berupa angka lebih dari 0"
+
+                            statusInput.isBlank() -> "Status wajib dipilih"
+                            else -> null
                         }
-                        onTambahAssetClick(
-                            titleInput,
-                            stockInput,
-                            statusInput,
-                            categoryInput,
-                            descriptionInput,
-                            imageBytes
-                        )
+
+                        if (validationError == null) {
+                            val imageBytes = bitmap?.let { bmp ->
+                                java.io.ByteArrayOutputStream().use { stream ->
+                                    bmp.compress(
+                                        android.graphics.Bitmap.CompressFormat.JPEG,
+                                        80,
+                                        stream
+                                    )
+                                    stream.toByteArray()
+                                }
+                            }
+                            onTambahAssetClick(
+                                titleInput,
+                                stockInput,
+                                statusInput,
+                                categoryInput,
+                                descriptionInput,
+                                imageBytes
+                            )
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 )

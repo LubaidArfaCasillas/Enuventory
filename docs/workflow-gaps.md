@@ -61,7 +61,7 @@ dapat notifikasi apapun** soal request baru.
 trigger on-create di collection `borrows` dengan `status: Pending`, kirim push ke device admin.
 Di luar scope client-only Android app ini kalau belum ada Cloud Functions project-nya.
 
-## 4. "Upload bukti foto" masih dummy, belum upload asli ke Firebase Storage
+## 4. "Upload bukti foto" masih dummy, belum upload asli
 
 `ReturnAssetViewModel.submitReturn()` (`ui/screen/history/ReturnAssetViewModel.kt:60-70`):
 
@@ -82,10 +82,16 @@ sekarang sudah ada dan dipakai beneran untuk upload **foto asset** (fitur "Tamba
 sekali" di atas sudah gak akurat untuk kasus itu. Tapi alur **pengembalian** ini masih belum
 disambungkan ke repository yang sama; masih pakai `dummyProofUrl` di atas.
 
+Catatan: backend upload-nya **bukan Firebase Storage**, tapi **Supabase Storage**
+(`di/SupabaseModule.kt`, bucket `Enuventory`) — Firebase Storage butuh upgrade ke Blaze plan
+(gak bisa lagi Spark plan sejak kebijakan Google Okt 2024), jadi dipindah ke Supabase yang free
+tier-nya gak perlu billing sama sekali. Perlu `SUPABASE_URL`/`SUPABASE_ANON_KEY` di
+`local.properties` (gitignored) buat provider ini jalan; lihat `SupabaseModule.kt`.
+
 **Saran:** implementasikan capture foto asli (CameraX/`ActivityResultContracts.TakePicture`) di
 `UploadBuktiFotoPage`/`ReturnAssetViewModel`, lalu panggil `UploadAssetImageUseCase` yang sudah
-ada (atau bikin use case sejenis, mis. `UploadReturnProofUseCase`, kalau mau path Storage yang
-beda dari foto asset) buat upload beneran, dan pakai URL hasilnya di
+ada (atau bikin use case sejenis, mis. `UploadReturnProofUseCase`, kalau mau bucket/path Storage
+yang beda dari foto asset) buat upload beneran, dan pakai URL hasilnya di
 `returnAssetUseCase(recordId, uploadedUrl)`.
 
 ## 5. ~~Bug: ID asset bisa collision & diam-diam overwrite asset lain~~ (FIXED)

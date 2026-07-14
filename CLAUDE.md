@@ -8,7 +8,8 @@ repository.
 Enuventory is a native Android app (Kotlin + Jetpack Compose) for managing an inventory of
 borrowable assets/equipment. Two roles share the same app: `Admin` (manages assets, approves/rejects
 borrow requests) and `RegularUser` (browses assets, requests to borrow, returns items with photo
-proof). Backend is Firebase (Auth + Firestore + Storage), no custom server.
+proof). Backend is Firebase (Auth + Firestore) for data/auth, plus Supabase Storage for file
+uploads (asset photos) — no custom server for either.
 
 Code identifiers (classes, functions, variables) are in English; comments and in-app user-facing
 strings/UI labels are written in Bahasa Indonesia (e.g. `Pengembalian` = return, `Riwayat` =
@@ -27,11 +28,18 @@ This is a standard Gradle/Android Studio project — use Android Studio, or the 
 ./gradlew lint                   # Android lint
 ```
 
-There are no real unit/instrumented tests yet — only the default template placeholders
-(`ExampleUnitTest.kt`, `ExampleInstrumentedTest.kt`).
+JVM unit tests (`app/src/test`) cover the ViewModels for both main flows (borrow + return) plus
+the asset-ID generator, using hand-written fakes in `fake/` (no mocking library, no Robolectric —
+`testOptions.unitTests.isReturnDefaultValues = true` handles the odd `android.util.Log` call).
+Instrumented tests (`app/src/androidTest`) are still just the default template placeholder.
 
 Firebase requires `app/google-services.json` (already present in this repo) and a matching
-Firebase project (Auth email/password + Firestore + Storage enabled).
+Firebase project (Auth email/password + Firestore enabled). Supabase Storage requires
+`SUPABASE_URL` and `SUPABASE_ANON_KEY` in `local.properties` (gitignored, not committed) — see
+`di/SupabaseModule.kt`. Firebase Storage is intentionally **not** used: as of the Google policy
+change in Oct 2024, new Storage buckets require the paid Blaze plan, so file uploads (asset
+photos) go through Supabase Storage's free tier instead (`data/repository/StorageRepositoryImpl.kt`,
+bucket `Enuventory`, public read).
 
 ## Architecture
 
@@ -59,8 +67,9 @@ Standard Clean Architecture, three layers, strict dependency direction
       history for a prior bug this pattern fixes).
 - **`di/`** — Hilt modules. `RepositoryModule` binds each `XxxRepository` interface to its
   `XxxRepositoryImpl` with `@Binds @Singleton`. `FirebaseModule` provides `FirebaseAuth`/
-  `FirebaseFirestore`/`FirebaseStorage` instances. `DataStoreModule` provides the Preferences
-  DataStore used for theme persistence.
+  `FirebaseFirestore` instances. `SupabaseModule` provides the `SupabaseClient` (Storage plugin
+  installed) used for file uploads. `DataStoreModule` provides the Preferences DataStore used for
+  theme persistence.
 - **`ui/`**
     - `screen/<feature>/` — one `@HiltViewModel` per screen (e.g.
       `screen/asset/DetailAssetUserViewModel.kt`).
@@ -97,4 +106,6 @@ there is no mock/demo login path (previously existed, was intentionally removed)
 - Single Gradle module: `app`. Dependency versions are centralized in `gradle/libs.versions.toml`
   (version catalog) — add new dependencies there, not as inline coordinates in `build.gradle.kts`.
 - Kotlin serialization is used for type-safe nav args, not for network DTOs (there's no REST API).
-- `compileSdk`/`targetSdk` 37, `minSdk` 24, Java 11 source/target compatibility.
+- `compileSdk`/`targetSdk` 37, `minSdk` 24, Java 11 source/target compatibility. Core library
+  desugaring is enabled (`isCoreLibraryDesugaringEnabled`) specifically because supabase-kt
+  requires `minSdk` 26.

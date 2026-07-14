@@ -26,8 +26,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import dev.stefano.enuventory.domain.model.Asset
 import dev.stefano.enuventory.domain.model.AssetStatus
 import dev.stefano.enuventory.ui.common.EnuEmptyState
@@ -105,7 +107,16 @@ fun DetailAssetAdminPage(
                                 .fillMaxWidth()
                                 .height(200.dp)
                                 .background(Color(0xFFB0B0B0))
-                        )
+                        ) {
+                            if (asset.imageUrl != null) {
+                                AsyncImage(
+                                    model = asset.imageUrl,
+                                    contentDescription = asset.title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
 
                         Card(
                             modifier = Modifier
