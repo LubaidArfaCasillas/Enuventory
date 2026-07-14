@@ -35,6 +35,7 @@ import dev.stefano.enuventory.ui.pages.EditAssetPage
 import dev.stefano.enuventory.ui.pages.HistoryPage
 import dev.stefano.enuventory.ui.pages.HomeAdminPage
 import dev.stefano.enuventory.ui.pages.HomeUserPage
+import dev.stefano.enuventory.ui.pages.KelolaKategoriPage
 import dev.stefano.enuventory.ui.pages.PengembalianPage
 import dev.stefano.enuventory.ui.pages.ScanQRPage
 import dev.stefano.enuventory.ui.pages.SettingsAdminPage
@@ -49,6 +50,7 @@ import dev.stefano.enuventory.ui.screen.asset.EditAssetViewModel
 import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
 import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
 import dev.stefano.enuventory.ui.screen.auth.LoginScreen
+import dev.stefano.enuventory.ui.screen.category.KelolaKategoriViewModel
 import dev.stefano.enuventory.ui.screen.history.DetailRiwayatViewModel
 import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
@@ -175,10 +177,12 @@ fun EnuNavGraph(
             val currentRoute = navController.currentBackStackEntry?.destination?.route
             val homeViewModel: HomeViewModel = hiltViewModel()
             val assetsState by homeViewModel.assetsState.collectAsStateWithLifecycle()
+            val homeCategoriesState by homeViewModel.categoriesState.collectAsStateWithLifecycle()
 
             if (isAdmin) {
                 HomeAdminPage(
                     state = assetsState,
+                    categories = homeCategoriesState,
                     currentRoute = currentRoute,
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
@@ -196,6 +200,7 @@ fun EnuNavGraph(
             } else {
                 HomeUserPage(
                     state = assetsState,
+                    categories = homeCategoriesState,
                     currentRoute = currentRoute,
                     onBottomBarItemClick = { item ->
                         val route = when (item.route) {
@@ -263,6 +268,7 @@ fun EnuNavGraph(
                         onBottomBarClick(route)
                     },
                     onSignOutClick = { settingsViewModel.signOut() },
+                    onKelolaKategoriClick = { navController.navigate(EnuRoute.KelolaKategori) },
                     isAdmin = true
                 )
             } else {
@@ -319,9 +325,11 @@ fun EnuNavGraph(
             val currentRoute = navController.currentBackStackEntry?.destination?.route
             val tambahAssetViewModel: TambahAssetViewModel = hiltViewModel()
             val addState by tambahAssetViewModel.addState.collectAsStateWithLifecycle()
+            val categories by tambahAssetViewModel.categories.collectAsStateWithLifecycle()
 
             TambahAssetPage(
                 state = addState,
+                categories = categories,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val route = when (item.route) {
@@ -344,6 +352,10 @@ fun EnuNavGraph(
                         onSuccess = { navController.popBackStack() }
                     )
                 },
+                onAddCategory = { name, onSuccess ->
+                    tambahAssetViewModel.addCategory(name, onSuccess)
+                },
+                onManageCategoriesClick = { navController.navigate(EnuRoute.KelolaKategori) },
                 onRetryClick = { tambahAssetViewModel.resetState() }
             )
         }
@@ -412,10 +424,12 @@ fun EnuNavGraph(
             val editAssetViewModel: EditAssetViewModel = hiltViewModel()
             val assetState by editAssetViewModel.assetState.collectAsStateWithLifecycle()
             val saveState by editAssetViewModel.saveState.collectAsStateWithLifecycle()
+            val categories by editAssetViewModel.categories.collectAsStateWithLifecycle()
 
             EditAssetPage(
                 assetState = assetState,
                 saveState = saveState,
+                categories = categories,
                 currentRoute = currentRoute,
                 onBottomBarItemClick = { item ->
                     val navRoute = when (item.route) {
@@ -438,7 +452,46 @@ fun EnuNavGraph(
                         onSuccess = { navController.popBackStack() }
                     )
                 },
+                onAddCategory = { name, onSuccess ->
+                    editAssetViewModel.addCategory(name, onSuccess)
+                },
+                onManageCategoriesClick = { navController.navigate(EnuRoute.KelolaKategori) },
                 onRetryClick = { editAssetViewModel.resetState() }
+            )
+        }
+
+        // ── Kelola Kategori (Admin) ─────────────────────────────────────────
+        composable<EnuRoute.KelolaKategori> {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val kelolaKategoriViewModel: KelolaKategoriViewModel = hiltViewModel()
+            val categoriesState by kelolaKategoriViewModel.categoriesState.collectAsStateWithLifecycle()
+            val actionError by kelolaKategoriViewModel.actionError.collectAsStateWithLifecycle()
+
+            KelolaKategoriPage(
+                categoriesState = categoriesState,
+                actionError = actionError,
+                currentRoute = currentRoute,
+                onBottomBarItemClick = { item ->
+                    val navRoute = when (item.route) {
+                        "home" -> EnuRoute.Home
+                        "approval" -> EnuRoute.Approval
+                        "settings" -> EnuRoute.Settings
+                        else -> EnuRoute.Home
+                    }
+                    onBottomBarClick(navRoute)
+                },
+                onBackClick = { navController.popBackStack() },
+                onAddCategory = { name, onSuccess ->
+                    kelolaKategoriViewModel.addCategory(name, onSuccess)
+                },
+                onRenameCategory = { category, newName, onSuccess ->
+                    kelolaKategoriViewModel.renameCategory(category.category, newName, onSuccess)
+                },
+                onDeleteCategory = { category, onSuccess ->
+                    kelolaKategoriViewModel.deleteCategory(category, onSuccess)
+                },
+                onClearActionError = { kelolaKategoriViewModel.clearActionError() },
+                onRetryClick = {}
             )
         }
 

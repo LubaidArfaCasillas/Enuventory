@@ -51,6 +51,7 @@ fun SettingsAdminPage(
     onThemeSelected: (AppThemeMode) -> Unit,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onSignOutClick: () -> Unit,
+    onKelolaKategoriClick: () -> Unit,
     modifier: Modifier = Modifier,
     isAdmin: Boolean = false
 ) {
@@ -144,6 +145,50 @@ fun SettingsAdminPage(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
+                    text = "INVENTORY",
+                    style = EnuTheme.typography.ui.labels.normalCase.small,
+                    color = EnuTheme.colors.contentDefaultSubtle
+                )
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = onKelolaKategoriClick),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = EnuTheme.colors.surfaceDefaultBase),
+                    border = BorderStroke(1.dp, EnuTheme.colors.borderDefaultMedium)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_settings),
+                                contentDescription = "Kelola Kategori",
+                                tint = EnuTheme.colors.contentBrandPrimaryDefault
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Kelola Kategori",
+                                style = EnuTheme.typography.ui.labels.normalCase.base,
+                                color = EnuTheme.colors.contentDefaultPrimary
+                            )
+                        }
+                        Text(
+                            text = "›",
+                            style = EnuTheme.typography.ui.labels.normalCase.large,
+                            color = EnuTheme.colors.contentDefaultSubtle
+                        )
+                    }
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
                     text = "APPEARANCE",
                     style = EnuTheme.typography.ui.labels.normalCase.small,
                     color = EnuTheme.colors.contentDefaultSubtle
@@ -229,6 +274,7 @@ fun SettingsAdminPagePreviewLight() {
             onThemeSelected = {},
             onBottomBarItemClick = {},
             onSignOutClick = {},
+            onKelolaKategoriClick = {},
             isAdmin = true
         )
     }
@@ -247,6 +293,7 @@ fun SettingsAdminPagePreviewDark() {
             onThemeSelected = {},
             onBottomBarItemClick = {},
             onSignOutClick = {},
+            onKelolaKategoriClick = {},
             isAdmin = true
         )
     }

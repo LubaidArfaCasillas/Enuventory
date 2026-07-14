@@ -7,10 +7,12 @@ import dagger.hilt.components.SingletonComponent
 import dev.stefano.enuventory.data.repository.AssetRepositoryImpl
 import dev.stefano.enuventory.data.repository.AuthRepositoryImpl
 import dev.stefano.enuventory.data.repository.BorrowRepositoryImpl
+import dev.stefano.enuventory.data.repository.CategoryRepositoryImpl
 import dev.stefano.enuventory.data.repository.StorageRepositoryImpl
 import dev.stefano.enuventory.domain.repository.AssetRepository
 import dev.stefano.enuventory.domain.repository.AuthRepository
 import dev.stefano.enuventory.domain.repository.BorrowRepository
+import dev.stefano.enuventory.domain.repository.CategoryRepository
 import dev.stefano.enuventory.domain.repository.StorageRepository
 import javax.inject.Singleton
 
@@ -56,4 +58,10 @@ abstract class RepositoryModule {
     abstract fun bindStorageRepository(
         impl: StorageRepositoryImpl
     ): StorageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCategoryRepository(
+        impl: CategoryRepositoryImpl
+    ): CategoryRepository
 }

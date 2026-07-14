@@ -32,7 +32,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,6 +49,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import dev.stefano.enuventory.R
+import dev.stefano.enuventory.domain.model.Category
 import dev.stefano.enuventory.ui.common.EnuErrorState
 import dev.stefano.enuventory.ui.common.UiState
 import dev.stefano.enuventory.ui.components.EnuBottomBar
@@ -64,6 +64,7 @@ import dev.stefano.enuventory.ui.theme.EnuTheme
 @Composable
 fun TambahAssetPage(
     state: UiState<Unit>,
+    categories: List<Category>,
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onBackClick: () -> Unit,
@@ -75,6 +76,8 @@ fun TambahAssetPage(
         description: String,
         imageBytes: ByteArray?
     ) -> Unit,
+    onAddCategory: (name: String, onSuccess: (String) -> Unit) -> Unit,
+    onManageCategoriesClick: () -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -113,7 +116,6 @@ fun TambahAssetPage(
     var categoryInput by remember { mutableStateOf("") }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryInput by remember { mutableStateOf("") }
-    val existingCategories = remember { mutableStateListOf("Elektro", "IoT", "Mekanik") }
 
     val borderColor = EnuTheme.colors.borderDefaultMedium
 
@@ -145,19 +147,19 @@ fun TambahAssetPage(
                             .heightIn(max = 160.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        existingCategories.forEach { cat ->
+                        categories.forEach { cat ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        categoryInput = cat
+                                        categoryInput = cat.name
                                         showCategoryDialog = false
                                     }
                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = cat,
+                                    text = cat.name,
                                     style = EnuTheme.typography.ui.labels.normalCase.base,
                                     color = EnuTheme.colors.contentDefaultPrimary
                                 )
@@ -177,13 +179,26 @@ fun TambahAssetPage(
                         text = "Tambah & Pilih Kategori",
                         onClick = {
                             if (newCategoryInput.isNotBlank()) {
-                                existingCategories.add(newCategoryInput.trim())
-                                categoryInput = newCategoryInput.trim()
+                                onAddCategory(newCategoryInput.trim()) { addedName ->
+                                    categoryInput = addedName
+                                }
                                 newCategoryInput = ""
                                 showCategoryDialog = false
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "Kelola Kategori",
+                        style = EnuTheme.typography.ui.labels.normalCase.small,
+                        color = EnuTheme.colors.contentBrandPrimaryDefault,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showCategoryDialog = false
+                                onManageCategoriesClick()
+                            }
                     )
                 }
             }
@@ -412,10 +427,13 @@ fun TambahAssetPagePreviewLight() {
     EnuTheme {
         TambahAssetPage(
             state = UiState.Success(Unit),
+            categories = emptyList(),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
             onTambahAssetClick = { _, _, _, _, _, _ -> },
+            onAddCategory = { _, _ -> },
+            onManageCategoriesClick = {},
             onRetryClick = {}
         )
     }
@@ -427,10 +445,13 @@ fun TambahAssetPagePreviewDark() {
     EnuTheme(darkTheme = true) {
         TambahAssetPage(
             state = UiState.Loading,
+            categories = emptyList(),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
             onTambahAssetClick = { _, _, _, _, _, _ -> },
+            onAddCategory = { _, _ -> },
+            onManageCategoriesClick = {},
             onRetryClick = {}
         )
     }

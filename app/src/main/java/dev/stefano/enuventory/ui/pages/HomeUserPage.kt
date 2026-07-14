@@ -40,6 +40,7 @@ import dev.stefano.enuventory.ui.util.toUiStatus
 @Composable
 fun HomeUserPage(
     state: UiState<List<Asset>>,
+    categories: List<String>,
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onRetryClick: () -> Unit,
@@ -48,7 +49,6 @@ fun HomeUserPage(
     isAdmin: Boolean = false
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    val categories = listOf("All", "Elektro", "IoT")
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
 
     Scaffold(
@@ -112,9 +112,13 @@ fun HomeUserPage(
 
             when (state) {
                 is UiState.Success -> {
-                    val filteredAssets = remember(state.data, selectedCategoryIndex, searchQuery) {
+                    val selectedCategory = categories.getOrElse(selectedCategoryIndex) {
+                        categories.firstOrNull() ?: "All"
+                    }
+                    val filteredAssets = remember(state.data, selectedCategory, searchQuery) {
                         state.data.filter { item ->
-                            val matchesCategory = selectedCategoryIndex == 0 || item.category.lowercase() == categories[selectedCategoryIndex].lowercase()
+                            val matchesCategory =
+                                selectedCategoryIndex == 0 || item.category.lowercase() == selectedCategory.lowercase()
                             val matchesSearch = searchQuery.isBlank() || item.title.lowercase().contains(searchQuery.lowercase()) || item.id.lowercase().contains(searchQuery.lowercase())
                             matchesCategory && matchesSearch
                         }
@@ -173,6 +177,7 @@ fun HomeUserPageNormalPreviewLight() {
     EnuTheme {
         HomeUserPage(
             state = UiState.Success(dummyAssets),
+            categories = listOf("All", "Elektro", "IoT"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {},
@@ -187,6 +192,7 @@ fun HomeUserPageLoadingPreviewLight() {
     EnuTheme {
         HomeUserPage(
             state = UiState.Loading,
+            categories = listOf("All", "Elektro", "IoT"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {},
@@ -201,6 +207,7 @@ fun HomeUserPageErrorPreviewLight() {
     EnuTheme {
         HomeUserPage(
             state = UiState.Error("Gagal memuat data"),
+            categories = listOf("All", "Elektro", "IoT"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {},
@@ -215,6 +222,7 @@ fun HomeUserPageEmptyPreviewLight() {
     EnuTheme {
         HomeUserPage(
             state = UiState.Empty,
+            categories = listOf("All", "Elektro", "IoT"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {},
@@ -229,6 +237,7 @@ fun HomeUserPageNormalPreviewDark() {
     EnuTheme(darkTheme = true) {
         HomeUserPage(
             state = UiState.Success(dummyAssets),
+            categories = listOf("All", "Elektro", "IoT"),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onRetryClick = {},

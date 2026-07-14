@@ -47,8 +47,12 @@ Standard Clean Architecture, three layers, strict dependency direction
 `ui → domain → data` (domain never imports data or ui):
 
 - **`domain/`** — framework-free business layer.
-    - `model/` — plain data classes (`Asset`, `BorrowRecord`, `User`, `AppThemeMode`, enums like
-      `AssetStatus`, `BorrowStatus`, `UserRole`). No Firestore/Android types leak in here.
+    - `model/` — plain data classes (`Asset`, `BorrowRecord`, `User`, `Category`, `AppThemeMode`,
+      enums like `AssetStatus`, `BorrowStatus`, `UserRole`). No Firestore/Android types leak in
+      here. `Category` (its own `categories` Firestore collection, managed via the "Kelola
+      Kategori" admin screen) is the source of truth for both the Tambah/Edit Asset category
+      picker and the Home page category filter badges — `Asset.category` itself stays a plain
+      string, kept in sync by cascading renames through `KelolaKategoriViewModel`.
     - `repository/` — repository *interfaces* only.
     - `usecase/` — one class per action (e.g. `RequestBorrowUseCase`, `ApproveRequestUseCase`,
       `GetAssetsUseCase`), each with a single `operator fun invoke(...)`. ViewModels depend on

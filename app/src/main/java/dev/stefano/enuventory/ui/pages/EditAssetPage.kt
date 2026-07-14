@@ -33,7 +33,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,6 +53,7 @@ import coil3.compose.AsyncImage
 import dev.stefano.enuventory.R
 import dev.stefano.enuventory.domain.model.Asset
 import dev.stefano.enuventory.domain.model.AssetStatus
+import dev.stefano.enuventory.domain.model.Category
 import dev.stefano.enuventory.ui.common.EnuEmptyState
 import dev.stefano.enuventory.ui.common.EnuErrorState
 import dev.stefano.enuventory.ui.common.UiState
@@ -75,6 +75,7 @@ private fun AssetStatus.toStatusLabel(): String = when (this) {
 fun EditAssetPage(
     assetState: UiState<Asset>,
     saveState: UiState<Unit>,
+    categories: List<Category>,
     currentRoute: String?,
     onBottomBarItemClick: (EnuBottomBarItemData) -> Unit,
     onBackClick: () -> Unit,
@@ -86,6 +87,8 @@ fun EditAssetPage(
         description: String,
         imageBytes: ByteArray?
     ) -> Unit,
+    onAddCategory: (name: String, onSuccess: (String) -> Unit) -> Unit,
+    onManageCategoriesClick: () -> Unit,
     onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -112,7 +115,10 @@ fun EditAssetPage(
                 EditAssetForm(
                     asset = assetState.data,
                     saveState = saveState,
+                    categories = categories,
                     onEditAssetClick = onEditAssetClick,
+                    onAddCategory = onAddCategory,
+                    onManageCategoriesClick = onManageCategoriesClick,
                     modifier = Modifier.padding(innerPadding)
                 )
             }
@@ -151,6 +157,7 @@ fun EditAssetPage(
 private fun EditAssetForm(
     asset: Asset,
     saveState: UiState<Unit>,
+    categories: List<Category>,
     onEditAssetClick: (
         title: String,
         stock: String,
@@ -159,6 +166,8 @@ private fun EditAssetForm(
         description: String,
         imageBytes: ByteArray?
     ) -> Unit,
+    onAddCategory: (name: String, onSuccess: (String) -> Unit) -> Unit,
+    onManageCategoriesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var titleInput by remember(asset.id) { mutableStateOf(asset.title) }
@@ -197,9 +206,13 @@ private fun EditAssetForm(
     var categoryInput by remember(asset.id) { mutableStateOf(asset.category) }
     var showCategoryDialog by remember { mutableStateOf(false) }
     var newCategoryInput by remember { mutableStateOf("") }
-    val existingCategories = remember {
-        mutableStateListOf("Elektro", "IoT", "Mekanik").apply {
-            if (asset.category.isNotBlank() && !contains(asset.category)) add(asset.category)
+    // Safety net: kalau kategori asset ini (mis. data lama) gak ada di daftar kategori
+    // yang beneran terdaftar, tetep tampilin biar gak "hilang" dari pilihan.
+    val displayCategories = remember(categories, asset.category) {
+        if (asset.category.isNotBlank() && categories.none { it.name == asset.category }) {
+            categories + Category(id = "", name = asset.category)
+        } else {
+            categories
         }
     }
 
@@ -233,19 +246,19 @@ private fun EditAssetForm(
                             .heightIn(max = 160.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        existingCategories.forEach { cat ->
+                        displayCategories.forEach { cat ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        categoryInput = cat
+                                        categoryInput = cat.name
                                         showCategoryDialog = false
                                     }
                                     .padding(vertical = 8.dp, horizontal = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = cat,
+                                    text = cat.name,
                                     style = EnuTheme.typography.ui.labels.normalCase.base,
                                     color = EnuTheme.colors.contentDefaultPrimary
                                 )
@@ -265,13 +278,26 @@ private fun EditAssetForm(
                         text = "Tambah & Pilih Kategori",
                         onClick = {
                             if (newCategoryInput.isNotBlank()) {
-                                existingCategories.add(newCategoryInput.trim())
-                                categoryInput = newCategoryInput.trim()
+                                onAddCategory(newCategoryInput.trim()) { addedName ->
+                                    categoryInput = addedName
+                                }
                                 newCategoryInput = ""
                                 showCategoryDialog = false
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "Kelola Kategori",
+                        style = EnuTheme.typography.ui.labels.normalCase.small,
+                        color = EnuTheme.colors.contentBrandPrimaryDefault,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showCategoryDialog = false
+                                onManageCategoriesClick()
+                            }
                     )
                 }
             }
@@ -502,10 +528,13 @@ fun EditAssetPagePreviewLight() {
         EditAssetPage(
             assetState = UiState.Success(dummyAsset),
             saveState = UiState.Success(Unit),
+            categories = emptyList(),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
             onEditAssetClick = { _, _, _, _, _, _ -> },
+            onAddCategory = { _, _ -> },
+            onManageCategoriesClick = {},
             onRetryClick = {}
         )
     }
@@ -526,10 +555,13 @@ fun EditAssetPagePreviewDark() {
         EditAssetPage(
             assetState = UiState.Success(dummyAsset),
             saveState = UiState.Loading,
+            categories = emptyList(),
             currentRoute = "home",
             onBottomBarItemClick = {},
             onBackClick = {},
             onEditAssetClick = { _, _, _, _, _, _ -> },
+            onAddCategory = { _, _ -> },
+            onManageCategoriesClick = {},
             onRetryClick = {}
         )
     }

@@ -2,12 +2,16 @@ package dev.stefano.enuventory.ui.screen.asset
 
 import dev.stefano.enuventory.domain.model.AssetStatus
 import dev.stefano.enuventory.domain.usecase.AddAssetUseCase
+import dev.stefano.enuventory.domain.usecase.AddCategoryUseCase
 import dev.stefano.enuventory.domain.usecase.GetAssetByIdUseCase
+import dev.stefano.enuventory.domain.usecase.GetCategoriesUseCase
 import dev.stefano.enuventory.domain.usecase.UploadAssetImageUseCase
 import dev.stefano.enuventory.fake.FakeAssetRepository
+import dev.stefano.enuventory.fake.FakeCategoryRepository
 import dev.stefano.enuventory.fake.FakeStorageRepository
 import dev.stefano.enuventory.fake.MainDispatcherRule
 import dev.stefano.enuventory.ui.common.UiState
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -27,18 +31,38 @@ class TambahAssetViewModelTest {
 
     private lateinit var assetRepository: FakeAssetRepository
     private lateinit var storageRepository: FakeStorageRepository
+    private lateinit var categoryRepository: FakeCategoryRepository
 
     private fun createViewModel() = TambahAssetViewModel(
         addAssetUseCase = AddAssetUseCase(assetRepository),
         getAssetByIdUseCase = GetAssetByIdUseCase(assetRepository),
-        uploadAssetImageUseCase = UploadAssetImageUseCase(storageRepository)
+        uploadAssetImageUseCase = UploadAssetImageUseCase(storageRepository),
+        getCategoriesUseCase = GetCategoriesUseCase(categoryRepository),
+        addCategoryUseCase = AddCategoryUseCase(categoryRepository)
     )
 
     @Before
     fun setUp() {
         assetRepository = FakeAssetRepository()
         storageRepository = FakeStorageRepository()
+        categoryRepository = FakeCategoryRepository()
     }
+
+    @Test
+    fun `addCategory persists via the repository and reports the trimmed name back`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = createViewModel()
+            val job = launch { viewModel.categories.collect {} }
+            var addedName: String? = null
+
+            viewModel.addCategory("  Perkakas  ") { addedName = it }
+
+            assertEquals("Perkakas", addedName)
+            assertEquals(listOf("Perkakas"), categoryRepository.addCategoryCalls)
+            assertEquals(1, viewModel.categories.value.size)
+
+            job.cancel()
+        }
 
     @Test
     fun `addAsset succeeds and generated id follows the HW- format`() =

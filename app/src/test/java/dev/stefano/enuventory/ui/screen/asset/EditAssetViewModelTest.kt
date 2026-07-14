@@ -3,10 +3,13 @@ package dev.stefano.enuventory.ui.screen.asset
 import androidx.lifecycle.SavedStateHandle
 import dev.stefano.enuventory.domain.model.Asset
 import dev.stefano.enuventory.domain.model.AssetStatus
+import dev.stefano.enuventory.domain.usecase.AddCategoryUseCase
 import dev.stefano.enuventory.domain.usecase.GetAssetsUseCase
+import dev.stefano.enuventory.domain.usecase.GetCategoriesUseCase
 import dev.stefano.enuventory.domain.usecase.UpdateAssetUseCase
 import dev.stefano.enuventory.domain.usecase.UploadAssetImageUseCase
 import dev.stefano.enuventory.fake.FakeAssetRepository
+import dev.stefano.enuventory.fake.FakeCategoryRepository
 import dev.stefano.enuventory.fake.FakeStorageRepository
 import dev.stefano.enuventory.fake.MainDispatcherRule
 import dev.stefano.enuventory.ui.common.UiState
@@ -26,6 +29,7 @@ class EditAssetViewModelTest {
 
     private lateinit var assetRepository: FakeAssetRepository
     private lateinit var storageRepository: FakeStorageRepository
+    private lateinit var categoryRepository: FakeCategoryRepository
 
     private val existingAsset = Asset(
         id = "HW-EXIST",
@@ -41,15 +45,34 @@ class EditAssetViewModelTest {
         savedStateHandle = SavedStateHandle(mapOf("assetId" to assetId)),
         getAssetsUseCase = GetAssetsUseCase(assetRepository),
         updateAssetUseCase = UpdateAssetUseCase(assetRepository),
-        uploadAssetImageUseCase = UploadAssetImageUseCase(storageRepository)
+        uploadAssetImageUseCase = UploadAssetImageUseCase(storageRepository),
+        getCategoriesUseCase = GetCategoriesUseCase(categoryRepository),
+        addCategoryUseCase = AddCategoryUseCase(categoryRepository)
     )
 
     @Before
     fun setUp() {
         assetRepository = FakeAssetRepository()
         storageRepository = FakeStorageRepository()
+        categoryRepository = FakeCategoryRepository()
         assetRepository.setAssets(listOf(existingAsset))
     }
+
+    @Test
+    fun `addCategory persists via the repository and reports the trimmed name back`() =
+        runTest(mainDispatcherRule.testDispatcher) {
+            val viewModel = createViewModel()
+            val job = launch { viewModel.categories.collect {} }
+            var addedName: String? = null
+
+            viewModel.addCategory("  Perkakas  ") { addedName = it }
+
+            assertEquals("Perkakas", addedName)
+            assertEquals(listOf("Perkakas"), categoryRepository.addCategoryCalls)
+            assertEquals(1, viewModel.categories.value.size)
+
+            job.cancel()
+        }
 
     @Test
     fun `assetState reflects the existing asset for prefill`() =

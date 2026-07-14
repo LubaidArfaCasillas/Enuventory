@@ -228,7 +228,8 @@ fun SettingsUserPagePreviewLight() {
             selectedTheme = AppThemeMode.Light,
             onThemeSelected = {},
             onBottomBarItemClick = {},
-            onSignOutClick = {}
+            onSignOutClick = {},
+            onKelolaKategoriClick = {}
         )
     }
 }
@@ -245,7 +246,8 @@ fun SettingsUserPagePreviewDark() {
             selectedTheme = AppThemeMode.Dark,
             onThemeSelected = {},
             onBottomBarItemClick = {},
-            onSignOutClick = {}
+            onSignOutClick = {},
+            onKelolaKategoriClick = {}
         )
     }
 }
