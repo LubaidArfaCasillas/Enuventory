@@ -31,6 +31,7 @@ import dev.stefano.enuventory.ui.pages.DetailAssetAdminPage
 import dev.stefano.enuventory.ui.pages.DetailAssetUserPage
 import dev.stefano.enuventory.ui.pages.DetailRequestPage
 import dev.stefano.enuventory.ui.pages.DetailRiwayatPage
+import dev.stefano.enuventory.ui.pages.EditAssetPage
 import dev.stefano.enuventory.ui.pages.HistoryPage
 import dev.stefano.enuventory.ui.pages.HomeAdminPage
 import dev.stefano.enuventory.ui.pages.HomeUserPage
@@ -44,6 +45,7 @@ import dev.stefano.enuventory.ui.screen.approval.ApprovalViewModel
 import dev.stefano.enuventory.ui.screen.approval.DetailRequestViewModel
 import dev.stefano.enuventory.ui.screen.asset.DetailAssetAdminViewModel
 import dev.stefano.enuventory.ui.screen.asset.DetailAssetUserViewModel
+import dev.stefano.enuventory.ui.screen.asset.EditAssetViewModel
 import dev.stefano.enuventory.ui.screen.asset.TambahAssetViewModel
 import dev.stefano.enuventory.ui.screen.auth.AuthViewModel
 import dev.stefano.enuventory.ui.screen.auth.LoginScreen
@@ -396,11 +398,47 @@ fun EnuNavGraph(
                     onBottomBarClick(navRoute)
                 },
                 onBackClick = { navController.popBackStack() },
-                onEditClick = {},
+                onEditClick = { navController.navigate(EnuRoute.EditAsset(route.assetId)) },
                 onHapusClick = {
                     detailAssetAdminViewModel.deleteAsset(onSuccess = { navController.popBackStack() })
                 },
                 onRetryClick = {}
+            )
+        }
+
+        // ── Edit Asset (Admin) ──────────────────────────────────────────────
+        composable<EnuRoute.EditAsset> {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+            val editAssetViewModel: EditAssetViewModel = hiltViewModel()
+            val assetState by editAssetViewModel.assetState.collectAsStateWithLifecycle()
+            val saveState by editAssetViewModel.saveState.collectAsStateWithLifecycle()
+
+            EditAssetPage(
+                assetState = assetState,
+                saveState = saveState,
+                currentRoute = currentRoute,
+                onBottomBarItemClick = { item ->
+                    val navRoute = when (item.route) {
+                        "home" -> EnuRoute.Home
+                        "approval" -> EnuRoute.Approval
+                        "settings" -> EnuRoute.Settings
+                        else -> EnuRoute.Home
+                    }
+                    onBottomBarClick(navRoute)
+                },
+                onBackClick = { navController.popBackStack() },
+                onEditAssetClick = { title, stock, status, category, description, imageBytes ->
+                    editAssetViewModel.editAsset(
+                        title = title,
+                        stockStr = stock,
+                        statusStr = status,
+                        category = category,
+                        description = description,
+                        imageBytes = imageBytes,
+                        onSuccess = { navController.popBackStack() }
+                    )
+                },
+                onRetryClick = { editAssetViewModel.resetState() }
             )
         }
 
