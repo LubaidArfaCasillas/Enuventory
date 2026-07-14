@@ -49,7 +49,7 @@ Tiga bukti kongkret bahwa step ini di diagram cuma ada di UI, belum ada logic-ny
    approve = barang siap diambil tanpa perlu scan), opsi lebih murah: hapus step ini dari
    diagram & `ScanQRPage`/route terkait, supaya diagram & kode tetap sinkron.
 
-## 3. "Admin dapat notifikasi" belum ada push notification asli
+## 3. ~~"Admin dapat notifikasi" belum ada push notification asli~~ (PARTIALLY FIXED)
 
 Tidak ada FCM (`firebase-messaging`) atau `NotificationManager` di manapun di kodebase — sudah
 dicek lewat grep menyeluruh. Yang ada cuma realtime Firestore listener
@@ -57,9 +57,22 @@ dicek lewat grep menyeluruh. Yang ada cuma realtime Firestore listener
 kalau halaman Approval sedang kebuka. Kalau app admin di-background/ditutup, admin **tidak
 dapat notifikasi apapun** soal request baru.
 
-**Saran:** tambah Firebase Cloud Messaging — perlu Cloud Function (atau backend lain) yang
-trigger on-create di collection `borrows` dengan `status: Pending`, kirim push ke device admin.
-Di luar scope client-only Android app ini kalau belum ada Cloud Functions project-nya.
+**Update**: bell icon di Home (Admin & User) sekarang beneran fungsional — **in-app notification
+center**, bukan push notification asli. `HomeViewModel.adminNotificationCount`/
+`userNotificationCount` (`ui/screen/home/HomeViewModel.kt`) nge-drive badge angka di
+`EnuTopBar` (param baru `notificationCount`), dan tap bell buka `NotificationPage`
+(`EnuRoute.Notifikasi`) yang di-render dari `AdminNotificationViewModel` (jumlah request
+`Pending`, via `GetPendingRequestsUseCase` yang sudah ada) atau `UserNotificationViewModel`
+(pinjaman `Borrowed` yang batas kembalinya (`returnEstimate`) udah lewat atau tinggal ≤24 jam
+lagi, lihat `ui/util/NotificationMapper.kt`). Real-time selama app kebuka (pakai listener
+Firestore yang sudah ada, gak ada polling/permission baru), tapi **tetap bukan push
+notification** — kalau app di-kill/di-background, gak ada apa-apa yang muncul di system tray.
+
+**Saran (kalau nanti mau push beneran)**: tambah Firebase Cloud Messaging — perlu Cloud
+Function (atau backend lain) yang trigger on-create di collection `borrows` dengan
+`status: Pending`, kirim push ke device admin. Di luar scope client-only Android app ini kalau
+belum ada Cloud Functions project-nya (perlu upgrade ke Blaze plan, sama seperti kasus Firebase
+Storage — lihat catatan gap #4 di bawah).
 
 ## 4. "Upload bukti foto" masih dummy, belum upload asli
 

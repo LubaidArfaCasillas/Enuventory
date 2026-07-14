@@ -23,6 +23,8 @@ sealed interface EnuRoute {
     @Serializable data object Home : EnuRoute
     @Serializable data object History : EnuRoute
     @Serializable data object Settings : EnuRoute
+    @Serializable
+    data object Notifikasi : EnuRoute
 
     @Serializable data class DetailAsset(val assetId: String) : EnuRoute
     @Serializable data class DetailRiwayat(val recordId: String) : EnuRoute

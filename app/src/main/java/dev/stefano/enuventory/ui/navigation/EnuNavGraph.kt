@@ -38,6 +38,7 @@ import dev.stefano.enuventory.ui.pages.HomeAdminPage
 import dev.stefano.enuventory.ui.pages.HomeUserPage
 import dev.stefano.enuventory.ui.pages.KelolaKategoriPage
 import dev.stefano.enuventory.ui.pages.KelolaUserPage
+import dev.stefano.enuventory.ui.pages.NotificationPage
 import dev.stefano.enuventory.ui.pages.PengembalianPage
 import dev.stefano.enuventory.ui.pages.ScanQRPage
 import dev.stefano.enuventory.ui.pages.SettingsAdminPage
@@ -57,6 +58,8 @@ import dev.stefano.enuventory.ui.screen.history.DetailRiwayatViewModel
 import dev.stefano.enuventory.ui.screen.history.HistoryViewModel
 import dev.stefano.enuventory.ui.screen.history.ReturnAssetViewModel
 import dev.stefano.enuventory.ui.screen.home.HomeViewModel
+import dev.stefano.enuventory.ui.screen.notification.AdminNotificationViewModel
+import dev.stefano.enuventory.ui.screen.notification.UserNotificationViewModel
 import dev.stefano.enuventory.ui.screen.settings.SettingsViewModel
 import dev.stefano.enuventory.ui.screen.user.DetailUserAdminViewModel
 import dev.stefano.enuventory.ui.screen.user.KelolaUserViewModel
@@ -182,6 +185,8 @@ fun EnuNavGraph(
             val homeViewModel: HomeViewModel = hiltViewModel()
             val assetsState by homeViewModel.assetsState.collectAsStateWithLifecycle()
             val homeCategoriesState by homeViewModel.categoriesState.collectAsStateWithLifecycle()
+            val adminNotificationCount by homeViewModel.adminNotificationCount.collectAsStateWithLifecycle()
+            val userNotificationCount by homeViewModel.userNotificationCount.collectAsStateWithLifecycle()
 
             if (isAdmin) {
                 HomeAdminPage(
@@ -199,7 +204,15 @@ fun EnuNavGraph(
                     },
                     onRetryClick = {},
                     onFabClick = { navController.navigate(EnuRoute.TambahAsset) },
-                    onAssetClick = { assetId -> navController.navigate(EnuRoute.DetailAssetAdmin(assetId)) }
+                    onAssetClick = { assetId ->
+                        navController.navigate(
+                            EnuRoute.DetailAssetAdmin(
+                                assetId
+                            )
+                        )
+                    },
+                    notificationCount = adminNotificationCount,
+                    onNotificationClick = { navController.navigate(EnuRoute.Notifikasi) }
                 )
             } else {
                 HomeUserPage(
@@ -217,6 +230,69 @@ fun EnuNavGraph(
                     },
                     onRetryClick = {},
                     onAssetClick = { assetId -> navController.navigate(EnuRoute.DetailAsset(assetId)) },
+                    isAdmin = false,
+                    notificationCount = userNotificationCount,
+                    onNotificationClick = { navController.navigate(EnuRoute.Notifikasi) }
+                )
+            }
+        }
+
+        // ── Notifikasi (User / Admin) ────────────────────────────────────────
+        composable<EnuRoute.Notifikasi> {
+            val currentRoute = navController.currentBackStackEntry?.destination?.route
+
+            if (isAdmin) {
+                val adminNotificationViewModel: AdminNotificationViewModel = hiltViewModel()
+                val notificationsState by adminNotificationViewModel.notificationsState.collectAsStateWithLifecycle()
+
+                NotificationPage(
+                    state = notificationsState,
+                    currentRoute = currentRoute,
+                    onBottomBarItemClick = { item ->
+                        val route = when (item.route) {
+                            "home" -> EnuRoute.Home
+                            "approval" -> EnuRoute.Approval
+                            "settings" -> EnuRoute.Settings
+                            else -> EnuRoute.Home
+                        }
+                        onBottomBarClick(route)
+                    },
+                    onBackClick = { navController.popBackStack() },
+                    onItemClick = { recordId ->
+                        navController.navigate(
+                            EnuRoute.DetailRequest(
+                                recordId
+                            )
+                        )
+                    },
+                    onRetryClick = {},
+                    isAdmin = true
+                )
+            } else {
+                val userNotificationViewModel: UserNotificationViewModel = hiltViewModel()
+                val notificationsState by userNotificationViewModel.notificationsState.collectAsStateWithLifecycle()
+
+                NotificationPage(
+                    state = notificationsState,
+                    currentRoute = currentRoute,
+                    onBottomBarItemClick = { item ->
+                        val route = when (item.route) {
+                            "home" -> EnuRoute.Home
+                            "history" -> EnuRoute.History
+                            "settings" -> EnuRoute.Settings
+                            else -> EnuRoute.Home
+                        }
+                        onBottomBarClick(route)
+                    },
+                    onBackClick = { navController.popBackStack() },
+                    onItemClick = { recordId ->
+                        navController.navigate(
+                            EnuRoute.DetailRiwayat(
+                                recordId
+                            )
+                        )
+                    },
+                    onRetryClick = {},
                     isAdmin = false
                 )
             }

@@ -53,7 +53,9 @@ fun HomeAdminPage(
     onRetryClick: () -> Unit,
     onFabClick: () -> Unit,
     onAssetClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    notificationCount: Int = 0,
+    onNotificationClick: () -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryIndex by remember { mutableIntStateOf(0) }
@@ -64,7 +66,8 @@ fun HomeAdminPage(
             EnuTopBar(
                 title = "Home",
                 showNotification = true,
-                onNotificationClick = { }
+                notificationCount = notificationCount,
+                onNotificationClick = onNotificationClick
             )
         },
         bottomBar = {
