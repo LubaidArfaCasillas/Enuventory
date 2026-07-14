@@ -36,11 +36,11 @@ import dev.stefano.enuventory.ui.components.EnuTimeline
 import dev.stefano.enuventory.ui.components.EnuTimelineItemData
 import dev.stefano.enuventory.ui.components.EnuTimelineNodeStatus
 import dev.stefano.enuventory.ui.components.EnuTopBar
-import dev.stefano.enuventory.ui.theme.EnuTheme
 import dev.stefano.enuventory.ui.screen.history.DetailRiwayatUiModel
+import dev.stefano.enuventory.ui.theme.EnuTheme
 
 enum class DetailRiwayatState {
-    MenungguPersetujuan, MenungguPengambilan, BatasKembali, Dikembalikan
+    MenungguPersetujuan, MenungguPengambilan, BatasKembali, Dikembalikan, Ditolak
 }
 
 @Composable
@@ -150,6 +150,15 @@ fun DetailRiwayatPage(
                                 "Selesai",
                                 EnuTimelineNodeStatus.Completed
                             )
+                        )
+
+                        DetailRiwayatState.Ditolak -> listOf(
+                            EnuTimelineItemData(
+                                "Diajukan",
+                                record.borrowDate,
+                                EnuTimelineNodeStatus.Completed
+                            ),
+                            EnuTimelineItemData("Ditolak", null, EnuTimelineNodeStatus.Rejected)
                         )
                     }
                 }

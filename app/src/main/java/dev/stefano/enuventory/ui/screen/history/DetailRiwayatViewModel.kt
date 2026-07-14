@@ -44,7 +44,7 @@ class DetailRiwayatViewModel @Inject constructor(
                     val riwayatState = when (record.status) {
                         BorrowStatus.Pending -> DetailRiwayatState.MenungguPersetujuan
                         BorrowStatus.Borrowed -> DetailRiwayatState.BatasKembali
-                        BorrowStatus.Rejected -> DetailRiwayatState.MenungguPersetujuan
+                        BorrowStatus.Rejected -> DetailRiwayatState.Ditolak
                         BorrowStatus.Completed -> DetailRiwayatState.Dikembalikan
                     }
                     _uiState.value = UiState.Success(DetailRiwayatUiModel(record, riwayatState))

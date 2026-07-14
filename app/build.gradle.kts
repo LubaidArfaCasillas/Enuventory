@@ -36,6 +36,13 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            // Biar panggilan android.util.Log dkk di ViewModel gak crash "not mocked"
+            // saat di-unit test tanpa Robolectric.
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
@@ -59,6 +66,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
