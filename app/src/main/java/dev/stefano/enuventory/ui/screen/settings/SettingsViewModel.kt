@@ -34,7 +34,7 @@ class SettingsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppThemeMode.System
+            initialValue = AppThemeMode.Light
         )
 
     fun setThemeMode(mode: AppThemeMode) {

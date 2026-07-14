@@ -19,6 +19,6 @@ class MainViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AppThemeMode.System
+            initialValue = AppThemeMode.Light
         )
 }

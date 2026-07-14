@@ -20,11 +20,11 @@ class ThemeRepositoryImpl @Inject constructor(
 
     override fun getThemeMode(): Flow<AppThemeMode> {
         return dataStore.data.map { preferences ->
-            val themeName = preferences[PreferencesKeys.THEME_MODE] ?: AppThemeMode.System.name
+            val themeName = preferences[PreferencesKeys.THEME_MODE] ?: AppThemeMode.Light.name
             try {
                 AppThemeMode.valueOf(themeName)
             } catch (e: Exception) {
-                AppThemeMode.System
+                AppThemeMode.Light
             }
         }
     }

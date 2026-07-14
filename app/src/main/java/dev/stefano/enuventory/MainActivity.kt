@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,7 +29,6 @@ class MainActivity : ComponentActivity() {
             val isDarkTheme = when (themeMode) {
                 AppThemeMode.Light -> false
                 AppThemeMode.Dark -> true
-                AppThemeMode.System -> isSystemInDarkTheme()
             }
 
             EnuTheme(darkTheme = isDarkTheme) {
